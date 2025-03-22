@@ -1,10 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import TrainLoginPage from '../pages/TrainLoginPage';
 import TrainSchedulePage from '../pages/TrainSchedulePage';
 import TrainDetailsPage from '../pages/TrainDetailsPage';
 import ProtectedRoute from './ProtectedRoute';
+import Home from '../pages/Home';
 
 const AppRoutes: React.FC = () => {
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);

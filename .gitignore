@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#cursor
+.cursorrules
+.cursorignore
+
+#env
+.env/.env.dev
+.env/.env.prod
