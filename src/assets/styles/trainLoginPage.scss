@@ -1,0 +1,23 @@
+/* login頁面設置 */
+.login-page {
+  max-width: 400px;
+  margin: 100px auto;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 標題樣式 */
+.login-page h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* 按鈕樣式 */
+.login-form-button {
+  height: 40px;
+  font-size: 16px;
+}
