@@ -1,41 +1,38 @@
-# 火車時刻表查詢系統
+# 台鐵列車時刻查詢系統
 
-這是一個使用台灣鐵路管理局公開 API 的火車時刻表查詢系統，提供即時的列車資訊。
+使用台灣鐵路管理局公開 API 的列車時刻查詢系統，提供即時列車資訊與簡易的查詢介面。
 
 ## 功能特色
 
-- 查詢特定日期的火車時刻表
-- 根據車次號碼搜尋列車
-- 設定出發站與抵達站查詢
-- 用戶登入與權限管理
-- 響應式設計，適應各種裝置尺寸
+- 查詢特定日期的列車時刻表
+- 根據車次號碼搜尋特定列車
+- 以出發站與抵達站查詢列車
+- 查看車票與預訂資訊
+- 使用者驗證與授權機制
+- 完全響應式設計，支援各種裝置
 
 ## 技術堆疊
 
 - React 18.3
 - TypeScript
 - Vite 6.0
-- Redux Toolkit
-- Ant Design
-- Tailwind CSS
-- Fetch API
-- React Router v7
+- Redux Toolkit - 狀態管理
+- Ant Design - UI 元件庫
+- Axios - API 請求處理
+- React Router v7 - 路由管理
+- JSSHA - API 身份驗證
 
-## 開始使用
+## 快速開始
 
 ### 前置需求
 
-- Node.js 18 或更高版本
-- npm 9 或更高版本
-- PTX 平台 API 金鑰 (申請方式見下文)
+- Node.js 18+
+- npm 9+
+- PTX 平台 API 金鑰
 
-### PTX API 設定
+### 環境設定
 
-本專案使用台灣 PTX 平台 API。您需要：
-
-1. 前往 [PTX 平台](https://ptx.transportdata.tw/PTX/) 註冊帳號
-2. 申請 API 開發者金鑰 (App ID 和 App Key)
-3. 在專案根目錄創建 `.env` 文件，參照 `.env.example` 設定您的 API 金鑰：
+複製 `.env.example` 到 `.env` 並設定您的 PTX API 金鑰：
 
 ```
 VITE_API_URL=https://ptx.transportdata.tw/MOTC/v2
@@ -43,58 +40,76 @@ VITE_PTX_APP_ID=您的APP_ID
 VITE_PTX_APP_KEY=您的APP_KEY
 ```
 
-### 安裝
+### 開發與建置
 
 ```bash
-# 安裝所有依賴
+# 安裝依賴
 npm install
-```
 
-### 開發
-
-```bash
 # 啟動開發伺服器
 npm run dev
-```
 
-### 建置
-
-```bash
 # 生產環境建置
 npm run build
+
+# 預覽建置結果
+npm run preview
 ```
 
-## 專案結構
+## 專案架構
 
 ```
 src/
-├── api/          # API 請求與相關服務
-├── assets/       # 靜態資源（圖片、樣式等）
-├── components/   # 可重用的元件
-├── hooks/        # 自定義 React Hooks
-├── layouts/      # 頁面布局結構
-├── pages/        # 應用頁面
-├── routes/       # 路由設定
-├── store/        # Redux 狀態管理
-├── types/        # TypeScript 類型定義
-└── utils/        # 通用工具函數
+├── api/                # API 服務與資料處理
+│   ├── client.ts       # API 客戶端與請求處理
+│   ├── auth.ts         # 認證相關 API
+│   ├── train.ts        # 台鐵 API 服務
+│   └── index.ts        # API 模組入口
+├── assets/             # 靜態資源
+│   └── styles/         # SCSS 樣式檔案
+├── components/         # 可重用元件
+│   ├── ButtonComp/     # 按鈕元件
+│   ├── InputComp/      # 輸入框元件
+│   ├── TrainCardComp/  # 列車卡片元件
+│   └── ...
+├── pages/              # 應用頁面
+│   ├── TrainLoginPage.tsx      # 登入頁面
+│   ├── TrainSchedulePage.tsx   # 時刻表頁面
+│   ├── TrainDetailsPage.tsx    # 列車詳情頁面
+│   └── TicketQueryPage.tsx     # 車票查詢頁面
+├── routes/             # 路由設定
+├── store/              # Redux 狀態管理
+│   ├── authSlice.ts    # 認證狀態管理
+│   └── index.ts        # Store 配置
+└── utils/              # 工具函數
+    └── authStorage.ts  # 認證儲存工具
 ```
 
-## 程式碼標準
+## API 架構
 
-- 使用 ESLint 進行程式碼格式與錯誤檢查
-- 使用 Prettier 維持程式碼風格一致性
-- 使用 Stylelint 確保 CSS/SCSS 的品質
+本專案採用模組化的 API 架構，將不同功能區分為獨立模組：
+
+- **client.ts**: 處理 API 請求的核心模組，包含請求處理、認證與錯誤處理
+- **train.ts**: 包含所有台鐵 API 相關功能，如查詢列車、站點資訊等
+- **auth.ts**: 處理使用者認證相關 API，包括登入、登出與令牌刷新
+- **index.ts**: API 模組的統一入口點，導出所有 API 功能
+
+### 使用示例
+
+```typescript
+// 引入 API 功能
+import { getAllStations, getTrainByNumber } from '../api/train';
+import { loginApi } from '../api/auth';
+
+// 使用 API
+const stations = await getAllStations();
+const trainDetails = await getTrainByNumber('123', '2023-04-01');
+```
 
 ## 授權
 
 本專案使用 MIT 授權。
 
-## 特別感謝
+## 作者
 
-- [React](https://reactjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- [Ant Design](https://ant.design/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [PTX 平台](https://ptx.transportdata.tw/PTX/)
+Geng Yu aka s0912758806p
