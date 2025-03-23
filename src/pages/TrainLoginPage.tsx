@@ -4,16 +4,21 @@ import { useState } from 'react';
 import { Input, Button, Form, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { loginApi, LoginRequestParams } from '../api/auth';
 import '../assets/styles/trainLoginPage.scss';
 
 const { Title } = Typography;
+
+interface LoginFormValues extends LoginRequestParams {
+  remember?: boolean;
+}
 
 const TrainLoginPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleLogin = (values: { username: string; password: string }) => {
+  const handleLogin = async (values: LoginFormValues) => {
     const { username, password } = values;
 
     if (!username || !password) {
@@ -23,12 +28,28 @@ const TrainLoginPage: React.FC = () => {
 
     setLoading(true);
 
-    setTimeout(() => {
-      dispatch(login({ username }));
+    try {
+      // 調用登入 API
+      const response = await loginApi({ username, password });
+
+      // 成功後更新 Redux 狀態
+      dispatch(
+        login({
+          ...response.user,
+          token: response.token,
+          refreshToken: response.refreshToken,
+          expiresIn: response.expiresIn,
+        })
+      );
+
       setLoading(false);
       navigate('/schedule');
       message.success('登錄成功');
-    }, 1000);
+    } catch (error) {
+      console.error('Login failed:', error);
+      setLoading(false);
+      message.error('登錄失敗，請檢查用戶名和密碼');
+    }
   };
 
   return (
@@ -63,6 +84,21 @@ const TrainLoginPage: React.FC = () => {
             placeholder="密碼"
             disabled={loading}
           />
+        </Form.Item>
+
+        <Form.Item name="remember" valuePropName="checked">
+          <Form.Item name="remember" valuePropName="checked" noStyle>
+            <Button type="link" style={{ padding: 0 }} disabled={loading}>
+              記住我
+            </Button>
+          </Form.Item>
+          <Button
+            type="link"
+            style={{ float: 'right', padding: 0 }}
+            disabled={loading}
+          >
+            忘記密碼?
+          </Button>
         </Form.Item>
 
         <Form.Item>

@@ -56,8 +56,12 @@ export async function getAllStations(): Promise<Station[]> {
  * 獲取特定日期的火車時刻表
  * @param date 日期，格式為YYYY-MM-DD
  */
-export async function getDailyTrainSchedule(date: string): Promise<TrainSchedule[]> {
-  return request<TrainSchedule[]>(`/Rail/TRA/DailyTrainInfo/TrainDate/${date}?$format=JSON`);
+export async function getDailyTrainSchedule(
+  date: string
+): Promise<TrainSchedule[]> {
+  return request<TrainSchedule[]>(
+    `/Rail/TRA/DailyTrainInfo/TrainDate/${date}?$format=JSON`
+  );
 }
 
 /**
@@ -65,8 +69,13 @@ export async function getDailyTrainSchedule(date: string): Promise<TrainSchedule
  * @param trainNo 車次號碼
  * @param date 日期，格式為YYYY-MM-DD
  */
-export async function getTrainByNumber(trainNo: string, date: string): Promise<TrainSchedule[]> {
-  return request<TrainSchedule[]>(`/Rail/TRA/DailyTrainInfo/TrainNo/${trainNo}/TrainDate/${date}?$format=JSON`);
+export async function getTrainByNumber(
+  trainNo: string,
+  date: string
+): Promise<TrainSchedule[]> {
+  return request<TrainSchedule[]>(
+    `/Rail/TRA/DailyTrainInfo/TrainNo/${trainNo}/TrainDate/${date}?$format=JSON`
+  );
 }
 
 /**

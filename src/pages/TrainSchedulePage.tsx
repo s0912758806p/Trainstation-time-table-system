@@ -23,7 +23,7 @@ import {
   getTrainsByRoute,
   getTrainByNumber,
   TrainSchedule as ApiTrainSchedule,
-} from '../api/trainApi';
+} from '../api/train';
 
 const { Option } = Select;
 const { Title } = Typography;

@@ -4,12 +4,14 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
+import { useEffect } from 'react';
 import TrainLoginPage from './pages/TrainLoginPage';
 import TrainSchedulePage from './pages/TrainSchedulePage';
 import TicketQueryPage from './pages/TicketQueryPage';
 import TrainLayout from './components/TrainLayout';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './store';
+import { checkSession } from './store/authSlice';
 
 // 添加警告處理函數，忽略 startTransition 警告
 const originalConsoleWarn = console.warn;
@@ -27,9 +29,15 @@ console.warn = (...args) => {
 };
 
 function App() {
+  const dispatch = useDispatch();
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.isAuthenticated
   );
+
+  // 應用啟動時檢查會話狀態
+  useEffect(() => {
+    dispatch(checkSession());
+  }, [dispatch]);
 
   return (
     <Router>

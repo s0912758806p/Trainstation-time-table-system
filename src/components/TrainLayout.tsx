@@ -13,6 +13,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { logout } from '../store/authSlice';
+import DateTime from './DateTime';
 
 const { Header, Content, Sider } = Layout;
 
@@ -58,51 +59,53 @@ const TrainLayout: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header
-        className="flex items-center justify-between"
         style={{
-          padding: '0 20px',
-          background: '#1e3a8a',
-          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          background: '#fff',
+          boxShadow: '0 1px 4px rgba(0, 21, 41, 0.08)',
         }}
       >
-        <div className="logo flex items-center">
-          <img
-            src="/train-logo.png"
-            alt="台鐵"
-            style={{ height: 40, marginRight: 10 }}
+        <div className="logo-container" style={{ marginRight: 'auto' }}>
+          <Link to="/">
+            <h1 style={{ margin: 0, fontSize: '1.5rem' }}>台鐵時刻查詢系統</h1>
+          </Link>
+        </div>
+
+        <div
+          className="center-content"
+          style={{ marginRight: 'auto', marginLeft: '32px' }}
+        >
+          <DateTime
+            style={{
+              fontSize: '1rem',
+              fontWeight: 'normal',
+              color: '#666',
+              marginLeft: '24px',
+            }}
           />
-          <h1 style={{ color: 'white', margin: 0, fontSize: '1.5rem' }}>
-            台灣鐵路管理局
-          </h1>
         </div>
-        <div className="right-content">
-          <Space>
-            <Button
-              type="text"
-              icon={<BellOutlined />}
-              style={{ color: 'white' }}
-            />
-            <Dropdown
-              menu={{ items }}
-              trigger={['click']}
-              placement="bottomRight"
-            >
-              <Button
-                type="text"
-                icon={
-                  <Avatar
-                    style={{ backgroundColor: '#1890ff' }}
-                    icon={<UserOutlined />}
-                  />
-                }
-                style={{ color: 'white' }}
-              >
-                {user?.username || '用戶'}
-              </Button>
-            </Dropdown>
-          </Space>
-        </div>
+
+        <Space>
+          <Button
+            type="text"
+            icon={<BellOutlined />}
+            style={{ marginRight: 12 }}
+          />
+          <Dropdown menu={{ items }} placement="bottomRight">
+            <Space style={{ cursor: 'pointer' }}>
+              <Avatar
+                style={{ backgroundColor: '#1890ff' }}
+                icon={<UserOutlined />}
+              />
+              <span>{user?.username || '用戶'}</span>
+            </Space>
+          </Dropdown>
+        </Space>
       </Header>
+
       <Layout>
         <Sider
           collapsible

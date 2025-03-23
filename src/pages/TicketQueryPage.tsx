@@ -18,7 +18,7 @@ import {
   FileTextOutlined,
   TagOutlined,
 } from '@ant-design/icons';
-import { getAllStations } from '../api/trainApi';
+import { getAllStations } from '../api/train';
 
 const { Title } = Typography;
 const { Option } = Select;
