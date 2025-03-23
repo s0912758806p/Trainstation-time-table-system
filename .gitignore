@@ -40,3 +40,4 @@ dist-ssr
 #env
 .env/.env.dev
 .env/.env.prod
+.vercel
