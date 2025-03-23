@@ -5,10 +5,11 @@ import TrainLoginPage from '../pages/TrainLoginPage';
 import TrainSchedulePage from '../pages/TrainSchedulePage';
 import TrainDetailsPage from '../pages/TrainDetailsPage';
 import ProtectedRoute from './ProtectedRoute';
-import Home from '../pages/Home';
 
 const AppRoutes: React.FC = () => {
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const isLoggedIn = useSelector(
+    (state: RootState) => state.auth.isAuthenticated
+  );
 
   const routesMap = [
     { path: '/login', element: <TrainLoginPage />, isProtected: false },
