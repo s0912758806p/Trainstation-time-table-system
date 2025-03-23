@@ -12,11 +12,17 @@ import authStorage from '../utils/authStorage';
 
 // API 基礎 URL
 const BASE_URL =
-  import.meta.env.VITE_API_URL || 'https://ptx.transportdata.tw/MOTC/v2';
+  import.meta.env.VITE_API_URL || 'https://tdx.transportdata.tw/api/basic';
 
-// PTX API 認證資訊
-const APP_ID = import.meta.env.VITE_PTX_APP_ID || '';
-const APP_KEY = import.meta.env.VITE_PTX_APP_KEY || '';
+// TDX API 認證資訊（非會員情況下不需要）
+const APP_ID = import.meta.env.VITE_TDX_APP_ID || '';
+const APP_KEY = import.meta.env.VITE_TDX_APP_KEY || '';
+
+// 保存 TDX 令牌及其過期時間
+let tdxToken = {
+  accessToken: '',
+  expiresAt: 0, // 時間戳，毫秒
+};
 
 // Request 選項接口
 interface RequestOptions extends RequestInit {
@@ -24,7 +30,8 @@ interface RequestOptions extends RequestInit {
 }
 
 /**
- * 取得台鐵 PTX API 認證用的 Header
+ * 獲取 API 授權標頭 (HMAC 認證)
+ * 用於 Swagger 文檔中指定的方式訪問公開 API
  */
 function getAuthorizationHeader() {
   const GMTString = new Date().toUTCString();
@@ -33,14 +40,11 @@ function getAuthorizationHeader() {
   ShaObj.update('x-date: ' + GMTString);
   const HMAC = ShaObj.getHMAC('B64');
   const Authorization = `hmac username="${APP_ID}", algorithm="hmac-sha1", headers="x-date", signature="${HMAC}"`;
-  return {
-    Authorization: Authorization,
-    'X-Date': GMTString,
-  };
+  return { Authorization, 'X-Date': GMTString };
 }
 
 /**
- * 台鐵 PTX API 請求函數
+ * 台鐵 TDX API 請求函數
  */
 export async function request<T>(
   url: string,
@@ -49,27 +53,39 @@ export async function request<T>(
   try {
     const { params, ...restOptions } = options || {};
 
+    // 確保 URL 中有 $format=JSON 參數
+    let apiUrl = url;
+    if (!apiUrl.includes('$format=')) {
+      apiUrl += apiUrl.includes('?') ? '&$format=JSON' : '?$format=JSON';
+    }
+
     // 構建完整URL，包括查詢參數
-    let fullUrl = `${BASE_URL}${url}`;
+    let fullUrl = `${BASE_URL}${apiUrl}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         searchParams.append(key, String(value));
       });
-      fullUrl += `?${searchParams.toString()}`;
+      fullUrl += `${
+        fullUrl.includes('?') ? '&' : '?'
+      }${searchParams.toString()}`;
     }
 
-    // 添加默認請求頭和授權信息
+    // console.log('發送 API 請求:', fullUrl);
+
+    // 獲取授權標頭
+    const authHeaders = getAuthorizationHeader();
+
+    // 添加 headers
     const headers = new Headers(restOptions?.headers);
+
+    // 添加 HMAC 授權標頭
+    headers.append('Authorization', authHeaders.Authorization);
+    headers.append('X-Date', authHeaders['X-Date']);
+
     if (!headers.has('Content-Type') && restOptions?.method !== 'GET') {
       headers.append('Content-Type', 'application/json');
     }
-
-    // 添加API認證資訊
-    const authHeaders = getAuthorizationHeader();
-    Object.entries(authHeaders).forEach(([key, value]) => {
-      headers.append(key, value);
-    });
 
     // 發送請求
     const response = await fetch(fullUrl, {
@@ -79,7 +95,10 @@ export async function request<T>(
 
     // 處理回應
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      const text = await response.text();
+      console.error(`API 請求失敗: ${response.status} ${response.statusText}`);
+      console.error('回應內容:', text);
+      throw new Error(`Request failed with status ${response.status}: ${text}`);
     }
 
     const data = await response.json();
@@ -100,13 +119,20 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 10000,
 });
 
-// 請求攔截器 - 添加認證令牌
+// 請求攔截器
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = authStorage.getToken();
+  async (config) => {
+    // 嘗試獲取用戶令牌 (僅用於應用程序內部認證)
+    const userToken = authStorage.getToken();
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (userToken) {
+      // 使用用戶令牌（用於後端 API）
+      config.headers.Authorization = `Bearer ${userToken}`;
+    } else {
+      // 使用 HMAC 認證
+      const authHeaders = getAuthorizationHeader();
+      config.headers.Authorization = authHeaders.Authorization;
+      config.headers['X-Date'] = authHeaders['X-Date'];
     }
 
     return config;

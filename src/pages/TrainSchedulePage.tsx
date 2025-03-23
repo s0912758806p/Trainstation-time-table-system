@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DatePicker,
   Select,
@@ -23,6 +23,7 @@ import {
   getTrainsByRoute,
   getTrainByNumber,
   TrainSchedule as ApiTrainSchedule,
+  getDailyTrainSchedule,
 } from '../api/train';
 
 const { Option } = Select;
@@ -51,6 +52,7 @@ const TrainSchedulePage: React.FC = () => {
   const [stations, setStations] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // 載入車站資料
@@ -197,14 +199,14 @@ const TrainSchedulePage: React.FC = () => {
       const arrivalTime = arrivalStop.ArrivalTime;
 
       return {
-        key: train.TrainInfo.TrainNo,
-        trainNo: train.TrainInfo.TrainNo,
+        key: train.DailyTrainInfo.TrainNo,
+        trainNo: train.DailyTrainInfo.TrainNo,
         departureTime,
         arrivalTime,
         departureStation: departureStop.StationName.Zh_tw,
         arrivalStation: arrivalStop.StationName.Zh_tw,
         duration: calculateDuration(departureTime, arrivalTime),
-        trainTypeName: train.TrainInfo.TrainTypeName.Zh_tw,
+        trainTypeName: train.DailyTrainInfo.TrainTypeName.Zh_tw,
       };
     });
   };
@@ -221,6 +223,9 @@ const TrainSchedulePage: React.FC = () => {
     }
 
     setLoading(true);
+    setSchedules([]);
+    setError(null);
+
     try {
       const formattedDate = startDate
         ? startDate.format('YYYY-MM-DD')
@@ -248,8 +253,8 @@ const TrainSchedulePage: React.FC = () => {
         message.success('查詢成功');
       }
     } catch (error) {
-      console.error(error);
-      message.error('查詢失敗，請稍後再試');
+      console.error('查詢失敗，請稍後再試', error);
+      setError('無法獲取列車資料，請稍後再試');
     } finally {
       setLoading(false);
     }
@@ -363,14 +368,18 @@ const TrainSchedulePage: React.FC = () => {
         <Title level={4} className="mb-4">
           查詢結果
         </Title>
-        <Table
-          columns={columns}
-          dataSource={schedules}
-          rowKey="trainNo"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-          bordered
-        />
+        {error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={schedules}
+            rowKey="trainNo"
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            bordered
+          />
+        )}
       </Card>
     </div>
   );

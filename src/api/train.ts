@@ -2,6 +2,7 @@ import { request } from './client';
 
 // 火車站點數據接口
 export interface Station {
+  StationUID: string;
   StationID: string;
   StationName: {
     Zh_tw: string;
@@ -12,11 +13,18 @@ export interface Station {
     PositionLon: number;
   };
   StationAddress: string;
+  LocationCity: string;
+  LocationCityCode: string;
+  LocationTown: string;
+  LocationTownCode: string;
+  StationClass: string;
+  StationPhone: string;
 }
 
 // 火車時刻表數據接口
 export interface TrainSchedule {
-  TrainInfo: {
+  TrainDate: string;
+  DailyTrainInfo: {
     TrainNo: string;
     Direction: number;
     TrainTypeID: string;
@@ -24,14 +32,23 @@ export interface TrainSchedule {
       Zh_tw: string;
       En: string;
     };
+    StartingStationID: string;
     StartingStationName: {
       Zh_tw: string;
       En: string;
     };
+    EndingStationID: string;
     EndingStationName: {
       Zh_tw: string;
       En: string;
     };
+    TripHeadSign: string;
+    WheelchairFlag: number;
+    BikeFlag: number;
+    BreastFeedingFlag: number;
+    DailyFlag: number;
+    ServiceAddedFlag: number;
+    Note: string;
   };
   StopTimes: Array<{
     StopSequence: number;
@@ -42,6 +59,7 @@ export interface TrainSchedule {
     };
     ArrivalTime: string;
     DepartureTime: string;
+    SuspendFlag: number;
   }>;
 }
 
@@ -49,7 +67,16 @@ export interface TrainSchedule {
  * 獲取所有火車站
  */
 export async function getAllStations(): Promise<Station[]> {
-  return request<Station[]>('/Rail/TRA/Station?$format=JSON');
+  try {
+    // 使用 Swagger 提供的 API 路徑
+    const response = await request<{ Stations: Station[] }>(
+      '/v2/Rail/TRA/Station?$top=500&$format=JSON'
+    );
+    return response.Stations || [];
+  } catch (error) {
+    console.error('獲取站點失敗', error);
+    throw error;
+  }
 }
 
 /**
@@ -59,9 +86,16 @@ export async function getAllStations(): Promise<Station[]> {
 export async function getDailyTrainSchedule(
   date: string
 ): Promise<TrainSchedule[]> {
-  return request<TrainSchedule[]>(
-    `/Rail/TRA/DailyTrainInfo/TrainDate/${date}?$format=JSON`
-  );
+  try {
+    // 使用 Swagger 提供的 API 路徑
+    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
+      `/v2/Rail/TRA/DailyTimetable/TrainDate/${date}?$top=500&$format=JSON`
+    );
+    return response.TrainTimetables || [];
+  } catch (error) {
+    console.error('獲取時刻表失敗', error);
+    throw error;
+  }
 }
 
 /**
@@ -73,9 +107,16 @@ export async function getTrainByNumber(
   trainNo: string,
   date: string
 ): Promise<TrainSchedule[]> {
-  return request<TrainSchedule[]>(
-    `/Rail/TRA/DailyTrainInfo/TrainNo/${trainNo}/TrainDate/${date}?$format=JSON`
-  );
+  try {
+    // 使用 Swagger 提供的 API 路徑
+    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
+      `/v2/Rail/TRA/DailyTimetable/TrainNo/${trainNo}/TrainDate/${date}?$top=30&$format=JSON`
+    );
+    return response.TrainTimetables || [];
+  } catch (error) {
+    console.error('獲取車次失敗', error);
+    throw error;
+  }
 }
 
 /**
@@ -89,7 +130,14 @@ export async function getTrainsByRoute(
   destinationStationID: string,
   date: string
 ): Promise<TrainSchedule[]> {
-  return request<TrainSchedule[]>(
-    `/Rail/TRA/DailyTrainInfo/OD/${originStationID}/to/${destinationStationID}/TrainDate/${date}?$format=JSON`
-  );
+  try {
+    // 使用 Swagger 提供的 API 路徑
+    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
+      `/v2/Rail/TRA/DailyTimetable/OD/${originStationID}/to/${destinationStationID}/TrainDate/${date}?$top=100&$format=JSON`
+    );
+    return response.TrainTimetables || [];
+  } catch (error) {
+    console.error('獲取路線失敗', error);
+    throw error;
+  }
 }
