@@ -150,6 +150,13 @@ const TrainLayout: React.FC = () => {
           width={200}
           theme="light"
           trigger={null}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'sticky',
+            top: 0,
+            left: 0,
+          }}
         >
           <div className="flex justify-end p-2">
             <Button
@@ -171,6 +178,7 @@ const TrainLayout: React.FC = () => {
               margin: 0,
               minHeight: 280,
               background: '#f5f5f5',
+              overflow: 'auto',
             }}
           >
             <Outlet />
