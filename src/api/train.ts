@@ -1,4 +1,11 @@
-import { request } from './client';
+import { request, USE_MOCK_API } from './client';
+import { mockTdxApi } from './mockApi';
+
+// 更新 BASE_URL 為 TDX API 端點
+const TDX_BASE_URL = 'https://tdx.transportdata.tw/api/basic';
+
+// 是否使用模擬數據 (從 client.ts 導入)
+const USE_MOCK_DATA = USE_MOCK_API;
 
 // 火車站點數據接口
 export interface Station {
@@ -67,12 +74,16 @@ export interface TrainSchedule {
  * 獲取所有火車站
  */
 export async function getAllStations(): Promise<Station[]> {
+  if (USE_MOCK_DATA) {
+    return mockTdxApi.getAllStations();
+  }
+
   try {
-    // 使用 Swagger 提供的 API 路徑
-    const response = await request<{ Stations: Station[] }>(
+    // 使用 TDX API 路徑
+    const response = await request<any>(
       '/v2/Rail/TRA/Station?$top=500&$format=JSON'
     );
-    return response.Stations || [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('獲取站點失敗', error);
     throw error;
@@ -86,12 +97,16 @@ export async function getAllStations(): Promise<Station[]> {
 export async function getDailyTrainSchedule(
   date: string
 ): Promise<TrainSchedule[]> {
+  if (USE_MOCK_DATA) {
+    return mockTdxApi.getDailyTrainSchedule(date);
+  }
+
   try {
-    // 使用 Swagger 提供的 API 路徑
-    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
+    // 使用 TDX API 路徑
+    const response = await request<any>(
       `/v2/Rail/TRA/DailyTimetable/TrainDate/${date}?$top=500&$format=JSON`
     );
-    return response.TrainTimetables || [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('獲取時刻表失敗', error);
     throw error;
@@ -107,12 +122,16 @@ export async function getTrainByNumber(
   trainNo: string,
   date: string
 ): Promise<TrainSchedule[]> {
+  if (USE_MOCK_DATA) {
+    return mockTdxApi.getTrainByNumber(trainNo, date);
+  }
+
   try {
-    // 使用 Swagger 提供的 API 路徑
-    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
+    // 使用 TDX API 路徑
+    const response = await request<any>(
       `/v2/Rail/TRA/DailyTimetable/TrainNo/${trainNo}/TrainDate/${date}?$top=30&$format=JSON`
     );
-    return response.TrainTimetables || [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('獲取車次失敗', error);
     throw error;
@@ -130,12 +149,20 @@ export async function getTrainsByRoute(
   destinationStationID: string,
   date: string
 ): Promise<TrainSchedule[]> {
-  try {
-    // 使用 Swagger 提供的 API 路徑
-    const response = await request<{ TrainTimetables: TrainSchedule[] }>(
-      `/v2/Rail/TRA/DailyTimetable/OD/${originStationID}/to/${destinationStationID}/TrainDate/${date}?$top=100&$format=JSON`
+  if (USE_MOCK_DATA) {
+    return mockTdxApi.getTrainsByRoute(
+      originStationID,
+      destinationStationID,
+      date
     );
-    return response.TrainTimetables || [];
+  }
+
+  try {
+    // 修正 API 路徑格式，使用 TrainDate 參數
+    const url = `/v2/Rail/TRA/DailyTimetable/OD/${originStationID}/to/${destinationStationID}/TrainDate/${date}?$top=100&$format=JSON`;
+
+    const response = await request<any>(url);
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('獲取路線失敗', error);
     throw error;

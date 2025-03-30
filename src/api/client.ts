@@ -10,13 +10,17 @@ import { store } from '../store';
 import { logout, updateToken } from '../store/authSlice';
 import authStorage from '../utils/authStorage';
 
-// API 基礎 URL
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'https://tdx.transportdata.tw/api/basic';
+// 是否為開發環境
+const IS_DEV = process.env.NODE_ENV === 'development';
 
-// TDX API 認證資訊（非會員情況下不需要）
-const APP_ID = import.meta.env.VITE_TDX_APP_ID || '';
-const APP_KEY = import.meta.env.VITE_TDX_APP_KEY || '';
+// 是否使用模擬數據 (修改此標誌可在開發環境切換真實/模擬 API)
+export const USE_MOCK_API = IS_DEV;
+
+// 從環境變量獲取配置
+const TDX_APP_ID = import.meta.env.VITE_TDX_APP_ID;
+const TDX_APP_KEY = import.meta.env.VITE_TDX_APP_KEY;
+const TDX_BASE_URL =
+  import.meta.env.VITE_API_URL || 'https://tdx.transportdata.tw/api/basic';
 
 // 保存 TDX 令牌及其過期時間
 let tdxToken = {
@@ -31,92 +35,114 @@ interface RequestOptions extends RequestInit {
 
 /**
  * 獲取 API 授權標頭 (HMAC 認證)
- * 用於 Swagger 文檔中指定的方式訪問公開 API
+ * 用於 TDX API 認證
  */
 function getAuthorizationHeader() {
-  const GMTString = new Date().toUTCString();
-  const ShaObj = new jsSHA('SHA-1', 'TEXT');
-  ShaObj.setHMACKey(APP_KEY, 'TEXT');
-  ShaObj.update('x-date: ' + GMTString);
-  const HMAC = ShaObj.getHMAC('B64');
-  const Authorization = `hmac username="${APP_ID}", algorithm="hmac-sha1", headers="x-date", signature="${HMAC}"`;
-  return { Authorization, 'X-Date': GMTString };
+  const date = new Date().toUTCString();
+  const shaObj = new jsSHA('SHA-1', 'TEXT');
+  shaObj.setHMACKey(TDX_APP_KEY, 'TEXT');
+  shaObj.update('x-date: ' + date);
+  const HMAC = shaObj.getHMAC('B64');
+  const Authorization = `hmac username="${TDX_APP_ID}", algorithm="hmac-sha1", headers="x-date", signature="${HMAC}"`;
+  return {
+    Authorization,
+    'X-Date': date,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'Access-Control-Allow-Origin': '*', // 允許所有來源，解決 CORS 問題
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers':
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Date',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+  };
 }
 
 /**
- * 台鐵 TDX API 請求函數
+ * 使用代理伺服器來解決 CORS 問題
+ * 測試環境下可能需要設置 proxy 來解決 CORS 問題
+ */
+function createProxyUrl(path: string): string {
+  // 本地開發可以使用代理伺服器，例如在 vite.config.ts 中設置
+  if (IS_DEV) {
+    return `/api${path}`; // 假設在 vite.config.ts 中設置了代理路徑為 /api
+  }
+  // 對於生產環境，直接返回完整 URL
+  return `${TDX_BASE_URL}${path}`;
+}
+
+/**
+ * TDX API 請求函數
  */
 export async function request<T>(
-  url: string,
-  options?: RequestOptions
+  path: string,
+  options: RequestInit = {}
 ): Promise<T> {
   try {
-    const { params, ...restOptions } = options || {};
+    // 生成認證標頭
+    const headers = {
+      ...getAuthorizationHeader(),
+      ...options.headers,
+    };
 
-    // 確保 URL 中有 $format=JSON 參數
-    let apiUrl = url;
-    if (!apiUrl.includes('$format=')) {
-      apiUrl += apiUrl.includes('?') ? '&$format=JSON' : '?$format=JSON';
-    }
+    // 創建適合環境的 URL（解決 CORS 問題）
+    const url = createProxyUrl(path);
 
-    // 構建完整URL，包括查詢參數
-    let fullUrl = `${BASE_URL}${apiUrl}`;
-    if (params) {
-      const searchParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        searchParams.append(key, String(value));
-      });
-      fullUrl += `${
-        fullUrl.includes('?') ? '&' : '?'
-      }${searchParams.toString()}`;
-    }
-
-    // console.log('發送 API 請求:', fullUrl);
-
-    // 獲取授權標頭
-    const authHeaders = getAuthorizationHeader();
-
-    // 添加 headers
-    const headers = new Headers(restOptions?.headers);
-
-    // 添加 HMAC 授權標頭
-    headers.append('Authorization', authHeaders.Authorization);
-    headers.append('X-Date', authHeaders['X-Date']);
-
-    if (!headers.has('Content-Type') && restOptions?.method !== 'GET') {
-      headers.append('Content-Type', 'application/json');
-    }
+    // 確保 URL 包含正確的格式參數
+    const formattedUrl = url.includes('$format=')
+      ? url
+      : `${url}${url.includes('?') ? '&' : '?'}$format=JSON`;
 
     // 發送請求
-    const response = await fetch(fullUrl, {
-      ...restOptions,
+    const response = await fetch(formattedUrl, {
+      ...options,
       headers,
+      // 添加 fetch 選項以避免 CORS 問題
+      mode: 'cors',
+      credentials: 'same-origin',
     });
 
-    // 處理回應
     if (!response.ok) {
-      const text = await response.text();
-      console.error(`API 請求失敗: ${response.status} ${response.statusText}`);
-      console.error('回應內容:', text);
-      throw new Error(`Request failed with status ${response.status}: ${text}`);
+      const errorText = await response.text();
+      console.error(`API 請求失敗: ${response.status}`, errorText);
+
+      if (response.status === 429) {
+        console.error(
+          '遇到 API 速率限制 (429 錯誤)。在開發環境下建議使用模擬數據。'
+        );
+        message.error('API 呼叫頻率超過限制，請稍後再試或考慮使用模擬數據');
+      }
+
+      throw new Error(
+        `API request failed with status ${response.status}: ${errorText}`
+      );
     }
 
     const data = await response.json();
-    return data as T;
+
+    // 請求成功，記錄結果摘要
+    console.log(
+      `API 請求成功: ${path}`,
+      Array.isArray(data) ? `獲取 ${data.length} 項數據` : '獲取數據成功'
+    );
+
+    return data;
   } catch (error) {
-    console.error('API request error:', error);
-    message.error('請求失敗，請稍後重試');
+    console.error('API request failed:', error);
+    message.error('獲取數據失敗，請稍後重試');
     throw error;
   }
 }
 
 // 創建 axios 實例用於一般 API 請求
 const apiClient: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: IS_DEV ? '/api' : TDX_BASE_URL, // 開發環境使用代理
   headers: {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
   timeout: 10000,
+  withCredentials: false, // 避免 CORS 問題
 });
 
 // 請求攔截器
@@ -148,6 +174,17 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    if (error.response) {
+      console.error(
+        `API 回應錯誤: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error('沒有收到回應:', error.request);
+    } else {
+      console.error('請求錯誤:', error.message);
+    }
+
     // 處理 401 錯誤（未授權）
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -158,7 +195,7 @@ apiClient.interceptors.response.use(
 
         if (refreshToken) {
           // 實際生產環境中應使用真實的刷新令牌 API
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${TDX_BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 

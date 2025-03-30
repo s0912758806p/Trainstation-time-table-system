@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DatePicker,
   Select,
@@ -23,12 +23,10 @@ import {
   getTrainsByRoute,
   getTrainByNumber,
   TrainSchedule as ApiTrainSchedule,
-  getDailyTrainSchedule,
 } from '../api/train';
 
 const { Option } = Select;
 const { Title } = Typography;
-const { TabPane } = Tabs;
 
 // 調整後的列車時刻表接口
 interface DisplayTrainSchedule {
@@ -63,6 +61,7 @@ const TrainSchedulePage: React.FC = () => {
           value: station.StationID,
           label: station.StationName.Zh_tw,
         }));
+
         setStations(formattedStations);
       } catch (error) {
         message.error('無法載入車站資料');
@@ -260,6 +259,118 @@ const TrainSchedulePage: React.FC = () => {
     }
   };
 
+  // 車站查詢頁面
+  const stationSearchContent = (
+    <Card className="mb-6 shadow-sm">
+      <div className="flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">出發日期</label>
+          <DatePicker
+            className="w-full"
+            placeholder="選擇日期"
+            onChange={setStartDate}
+          />
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">出發站</label>
+          <Select
+            className="w-full"
+            placeholder="選擇出發站"
+            showSearch
+            optionFilterProp="children"
+            value={departureStation}
+            onChange={setDepartureStation}
+          >
+            {stations.map((station) => (
+              <Option key={station.value} value={station.value}>
+                {station.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">到達站</label>
+          <Select
+            className="w-full"
+            placeholder="選擇到達站"
+            showSearch
+            optionFilterProp="children"
+            value={arrivalStation}
+            onChange={setArrivalStation}
+          >
+            {stations.map((station) => (
+              <Option key={station.value} value={station.value}>
+                {station.label}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">&nbsp;</label>
+          <Button
+            type="primary"
+            className="w-full"
+            onClick={handleSearch}
+            loading={loading}
+            icon={<SearchOutlined />}
+          >
+            查詢
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // 車次查詢頁面
+  const trainNumberSearchContent = (
+    <Card className="mb-6 shadow-sm">
+      <div className="flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">出發日期</label>
+          <DatePicker
+            className="w-full"
+            placeholder="選擇日期"
+            onChange={setStartDate}
+          />
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">車次</label>
+          <Input
+            placeholder="請輸入車次號碼"
+            value={trainNumber}
+            onChange={(e) => setTrainNumber(e.target.value)}
+          />
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block mb-2 font-medium">&nbsp;</label>
+          <Button
+            type="primary"
+            className="w-full"
+            onClick={handleSearch}
+            loading={loading}
+            icon={<SearchOutlined />}
+          >
+            查詢
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Tab 項目定義
+  const tabItems = [
+    {
+      key: 'byStation',
+      label: '車站查詢',
+      children: stationSearchContent,
+    },
+    {
+      key: 'byTrainNumber',
+      label: '車次查詢',
+      children: trainNumberSearchContent,
+    },
+  ];
+
   return (
     <div className="train-schedule-page p-6">
       <Title level={2} style={{ marginBottom: 24, textAlign: 'center' }}>
@@ -267,102 +378,12 @@ const TrainSchedulePage: React.FC = () => {
         台鐵火車時刻表查詢系統
       </Title>
 
-      <Tabs defaultActiveKey="byStation" centered className="mb-6">
-        <TabPane tab="車站查詢" key="byStation">
-          <Card className="mb-6 shadow-sm">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">出發日期</label>
-                <DatePicker
-                  className="w-full"
-                  placeholder="選擇日期"
-                  onChange={setStartDate}
-                />
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">出發站</label>
-                <Select
-                  className="w-full"
-                  placeholder="選擇出發站"
-                  showSearch
-                  optionFilterProp="children"
-                  value={departureStation}
-                  onChange={setDepartureStation}
-                >
-                  {stations.map((station) => (
-                    <Option key={station.value} value={station.value}>
-                      {station.label}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">到達站</label>
-                <Select
-                  className="w-full"
-                  placeholder="選擇到達站"
-                  showSearch
-                  optionFilterProp="children"
-                  value={arrivalStation}
-                  onChange={setArrivalStation}
-                >
-                  {stations.map((station) => (
-                    <Option key={station.value} value={station.value}>
-                      {station.label}
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">&nbsp;</label>
-                <Button
-                  type="primary"
-                  className="w-full"
-                  onClick={handleSearch}
-                  loading={loading}
-                  icon={<SearchOutlined />}
-                >
-                  查詢
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </TabPane>
-        <TabPane tab="車次查詢" key="byTrainNumber">
-          <Card className="mb-6 shadow-sm">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">出發日期</label>
-                <DatePicker
-                  className="w-full"
-                  placeholder="選擇日期"
-                  onChange={setStartDate}
-                />
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">車次</label>
-                <Input
-                  placeholder="請輸入車次號碼"
-                  value={trainNumber}
-                  onChange={(e) => setTrainNumber(e.target.value)}
-                />
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <label className="block mb-2 font-medium">&nbsp;</label>
-                <Button
-                  type="primary"
-                  className="w-full"
-                  onClick={handleSearch}
-                  loading={loading}
-                  icon={<SearchOutlined />}
-                >
-                  查詢
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </TabPane>
-      </Tabs>
+      <Tabs
+        items={tabItems}
+        defaultActiveKey="byStation"
+        centered
+        className="mb-6"
+      />
 
       <Card className="shadow-sm">
         <Title level={4} className="mb-4">
