@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Table, Card, Typography, Spin, Alert } from 'antd';
+import { Table, Card, Typography, Spin, Alert, Button } from 'antd';
 import { getTrainByNumber, TrainSchedule } from '../api/train';
+import { getMockTrainByNumber } from '../api/mockTrainDetails';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -21,8 +23,18 @@ interface StopInfo {
 
 const TrainDetailsPage = () => {
   const location = useLocation();
-  const state = location.state as RouteState;
-  const { trainNo, date } = state || { trainNo: '', date: '' };
+  const queryParams = new URLSearchParams(location.search);
+  const locationState = location.state as RouteState | null;
+
+  // 從URL參數或state中獲取車次和日期
+  const trainNoFromQuery = queryParams.get('trainNo');
+  const dateFromQuery = queryParams.get('date');
+
+  // 優先使用URL參數，其次使用location.state，最後使用默認值
+  const trainNo = trainNoFromQuery || locationState?.trainNo || '1202';
+  // 默認使用今天的日期，格式：YYYY-MM-DD
+  const date =
+    dateFromQuery || locationState?.date || dayjs().format('YYYY-MM-DD');
 
   const [loading, setLoading] = useState(true);
   const [trainData, setTrainData] = useState<TrainSchedule | null>(null);
@@ -30,14 +42,15 @@ const TrainDetailsPage = () => {
 
   useEffect(() => {
     const fetchTrainDetails = async () => {
-      if (!trainNo || !date) {
+      if (!trainNo) {
         setError('缺少必要的查詢參數');
         setLoading(false);
         return;
       }
 
       try {
-        const result = await getTrainByNumber(trainNo, date);
+        // 使用模擬數據（替代API調用）
+        const result = await getMockTrainByNumber(trainNo, date);
         if (result && result.length > 0) {
           setTrainData(result[0]);
         } else {
@@ -93,6 +106,33 @@ const TrainDetailsPage = () => {
     }));
   };
 
+  // 處理測試數據按鈕點擊
+  const handleTestData = () => {
+    const testTrainNumbers = ['1202', '2201', '3102'];
+    // 隨機選擇一個車次進行測試
+    const randomIndex = Math.floor(Math.random() * testTrainNumbers.length);
+    const testTrainNo = testTrainNumbers[randomIndex];
+
+    setLoading(true);
+
+    getMockTrainByNumber(testTrainNo, date)
+      .then((result) => {
+        if (result && result.length > 0) {
+          setTrainData(result[0]);
+          setError(null);
+        } else {
+          setError('找不到指定的列車資訊');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch test train details:', err);
+        setError('獲取測試列車資訊時發生錯誤');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -104,7 +144,17 @@ const TrainDetailsPage = () => {
   if (error) {
     return (
       <div className="p-4">
-        <Alert message="錯誤" description={error} type="error" showIcon />
+        <Alert
+          message="錯誤"
+          description={error}
+          type="error"
+          showIcon
+          action={
+            <Button size="small" type="primary" onClick={handleTestData}>
+              載入測試數據
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -115,6 +165,13 @@ const TrainDetailsPage = () => {
         <div className="mb-6">
           <Title level={3}>
             {trainData?.DailyTrainInfo.TrainNo} 次列車詳細資訊
+            <Button
+              type="link"
+              onClick={handleTestData}
+              style={{ marginLeft: 16 }}
+            >
+              載入其他測試數據
+            </Button>
           </Title>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div>
@@ -138,6 +195,10 @@ const TrainDetailsPage = () => {
             <div>
               <Text strong>行駛日期：</Text>
               <Text>{trainData?.TrainDate}</Text>
+            </div>
+            <div>
+              <Text strong>車次資訊：</Text>
+              <Text>{trainData?.DailyTrainInfo.TripHeadSign}</Text>
             </div>
             {trainData?.DailyTrainInfo.Note && (
               <div>

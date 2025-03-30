@@ -1,43 +1,32 @@
+import { Station, TrainSchedule } from './train';
 import {
   mockStations,
   generateMockTrainSchedules,
   getMockTrainsByRoute,
   getMockTrainByNumber,
 } from './mockData';
-import { Station, TrainSchedule } from './train';
 
-// 模擬延遲 (0-300ms)
-function simulateNetworkDelay(): Promise<void> {
-  const delay = Math.floor(Math.random() * 300);
+// 模擬網絡延遲 (300-800ms)
+const simulateNetworkDelay = (): Promise<void> => {
+  const delay = 300 + Math.random() * 500;
   return new Promise((resolve) => setTimeout(resolve, delay));
-}
+};
 
-/**
- * 模擬 TDX API 的調用接口
- */
+// 模擬TDX API
 export const mockTdxApi = {
-  /**
-   * 獲取所有火車站
-   */
+  // 獲取所有站點
   async getAllStations(): Promise<Station[]> {
     await simulateNetworkDelay();
     return [...mockStations];
   },
 
-  /**
-   * 獲取特定日期的火車時刻表
-   * @param date 日期，格式為YYYY-MM-DD
-   */
+  // 獲取特定日期的列車時刻表
   async getDailyTrainSchedule(date: string): Promise<TrainSchedule[]> {
     await simulateNetworkDelay();
     return generateMockTrainSchedules(date);
   },
 
-  /**
-   * 搜索特定車次的詳細信息
-   * @param trainNo 車次號碼
-   * @param date 日期，格式為YYYY-MM-DD
-   */
+  // 根據車次號和日期獲取列車信息
   async getTrainByNumber(
     trainNo: string,
     date: string
@@ -46,12 +35,7 @@ export const mockTdxApi = {
     return getMockTrainByNumber(trainNo, date);
   },
 
-  /**
-   * 獲取起點站到終點站的所有列車
-   * @param originStationID 起點站ID
-   * @param destinationStationID 終點站ID
-   * @param date 日期，格式為YYYY-MM-DD
-   */
+  // 根據起點站和終點站獲取列車
   async getTrainsByRoute(
     originStationID: string,
     destinationStationID: string,

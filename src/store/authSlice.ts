@@ -102,8 +102,30 @@ const authSlice = createSlice({
       // 更新 localStorage 中的令牌
       authStorage.updateToken(token, refreshToken, expiresIn);
     },
+
+    // 更新用戶資料
+    updateUser: (state, action: PayloadAction<any>) => {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload,
+        };
+
+        // 保存到 localStorage (保留原有的 token 和過期資訊)
+        authStorage.saveAuthState(
+          true,
+          state.user as UserData,
+          state.token,
+          state.refreshToken,
+          state.expiresAt
+            ? (state.expiresAt - new Date().getTime()) / 1000
+            : undefined
+        );
+      }
+    },
   },
 });
 
-export const { login, logout, checkSession, updateToken } = authSlice.actions;
+export const { login, logout, checkSession, updateToken, updateUser } =
+  authSlice.actions;
 export default authSlice.reducer;

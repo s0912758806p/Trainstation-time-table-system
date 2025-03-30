@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useState } from 'react';
 import { Input, Button, Form, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginApi, LoginRequestParams } from '../api/auth';
 import '../assets/styles/trainLoginPage.scss';
 
@@ -111,6 +111,7 @@ const TrainLoginPage: React.FC = () => {
           >
             登錄
           </Button>
+          或 <Link to="/register">立即註冊</Link>
         </Form.Item>
       </Form>
     </div>

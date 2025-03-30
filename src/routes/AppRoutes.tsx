@@ -4,6 +4,8 @@ import { RootState } from '../store';
 import TrainLoginPage from '../pages/TrainLoginPage';
 import TrainSchedulePage from '../pages/TrainSchedulePage';
 import TrainDetailsPage from '../pages/TrainDetailsPage';
+import UserProfilePage from '../pages/UserProfilePage';
+import StationInfoPage from '../pages/StationInfoPage';
 import ProtectedRoute from './ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -18,6 +20,16 @@ const AppRoutes: React.FC = () => {
       path: '/trainDetailsTable',
       element: <TrainDetailsPage />,
       isProtected: true,
+    },
+    {
+      path: '/profile',
+      element: <UserProfilePage />,
+      isProtected: true,
+    },
+    {
+      path: '/station/:stationId',
+      element: <StationInfoPage />,
+      isProtected: false,
     },
   ];
 
