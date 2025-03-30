@@ -306,25 +306,45 @@ export function generateMockTrainSchedules(date: string): TrainSchedule[] {
     { id: '6', name: { Zh_tw: '區間車', En: 'Intermediate' } },
   ];
 
+  // 定義所有主要車站 ID，確保能覆蓋到所有搜尋
+  const mainStations = [
+    { id: '1000', name: { Zh_tw: '臺北', En: 'Taipei' } },
+    { id: '1020', name: { Zh_tw: '板橋', En: 'Banqiao' } },
+    { id: '1040', name: { Zh_tw: '桃園', En: 'Taoyuan' } },
+    { id: '1060', name: { Zh_tw: '新竹', En: 'Hsinchu' } },
+    { id: '1080', name: { Zh_tw: '苗栗', En: 'Miaoli' } },
+    { id: '1100', name: { Zh_tw: '台中', En: 'Taichung' } },
+    { id: '1120', name: { Zh_tw: '彰化', En: 'Changhua' } },
+    { id: '1140', name: { Zh_tw: '斗六', En: 'Douliu' } },
+    { id: '1160', name: { Zh_tw: '嘉義', En: 'Chiayi' } },
+    { id: '1180', name: { Zh_tw: '台南', En: 'Tainan' } },
+    { id: '1200', name: { Zh_tw: '高雄', En: 'Kaohsiung' } },
+    { id: '1220', name: { Zh_tw: '屏東', En: 'Pingtung' } },
+    { id: '1240', name: { Zh_tw: '宜蘭', En: 'Yilan' } },
+    { id: '1260', name: { Zh_tw: '花蓮', En: 'Hualien' } },
+    { id: '1280', name: { Zh_tw: '台東', En: 'Taitung' } },
+  ];
+
   const schedules: TrainSchedule[] = [];
 
-  // 生成北上列車
-  for (let i = 1; i <= 10; i++) {
-    const trainNo = `${i}000`;
+  // 建立西部幹線北上列車 (高屏->台北)
+  const generateWestNorthboundTrain = (index: number, prefix = '') => {
+    const trainNo = `${prefix}${index}000`;
     const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
     const trainType = trainTypes[randomTypeIndex];
+    const startTime = 6 + Math.floor(index / 3); // 讓出發時間分散在一天中
 
     const schedule: TrainSchedule = {
       TrainDate: date,
       DailyTrainInfo: {
         TrainNo: trainNo,
-        Direction: 0, // 0:北上，1:南下
+        Direction: 0, // 0:北上
         TrainTypeID: trainType.id,
         TrainTypeName: trainType.name,
-        StartingStationID: '1180', // 台南
+        StartingStationID: '1200', // 高雄
         StartingStationName: {
-          Zh_tw: '台南',
-          En: 'Tainan',
+          Zh_tw: '高雄',
+          En: 'Kaohsiung',
         },
         EndingStationID: '1000', // 台北
         EndingStationName: {
@@ -342,87 +362,110 @@ export function generateMockTrainSchedules(date: string): TrainSchedule[] {
       StopTimes: [
         {
           StopSequence: 1,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
           StationID: '1180',
           StationName: {
             Zh_tw: '台南',
             En: 'Tainan',
           },
-          ArrivalTime: `${6 + i}:00`,
-          DepartureTime: `${6 + i}:05`,
+          ArrivalTime: `${startTime + 1}:00`,
+          DepartureTime: `${startTime + 1}:05`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 2,
+          StopSequence: 3,
           StationID: '1160',
           StationName: {
             Zh_tw: '嘉義',
             En: 'Chiayi',
           },
-          ArrivalTime: `${6 + i}:40`,
-          DepartureTime: `${6 + i}:45`,
+          ArrivalTime: `${startTime + 1}:40`,
+          DepartureTime: `${startTime + 1}:45`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 3,
+          StopSequence: 4,
           StationID: '1100',
           StationName: {
             Zh_tw: '台中',
             En: 'Taichung',
           },
-          ArrivalTime: `${7 + i}:30`,
-          DepartureTime: `${7 + i}:35`,
+          ArrivalTime: `${startTime + 2}:30`,
+          DepartureTime: `${startTime + 2}:35`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 4,
+          StopSequence: 5,
           StationID: '1060',
           StationName: {
             Zh_tw: '新竹',
             En: 'Hsinchu',
           },
-          ArrivalTime: `${8 + i}:20`,
-          DepartureTime: `${8 + i}:25`,
+          ArrivalTime: `${startTime + 3}:20`,
+          DepartureTime: `${startTime + 3}:25`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 5,
+          StopSequence: 6,
+          StationID: '1040',
+          StationName: {
+            Zh_tw: '桃園',
+            En: 'Taoyuan',
+          },
+          ArrivalTime: `${startTime + 3}:50`,
+          DepartureTime: `${startTime + 3}:55`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 7,
           StationID: '1020',
           StationName: {
             Zh_tw: '板橋',
             En: 'Banqiao',
           },
-          ArrivalTime: `${9 + i}:10`,
-          DepartureTime: `${9 + i}:15`,
+          ArrivalTime: `${startTime + 4}:10`,
+          DepartureTime: `${startTime + 4}:15`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 6,
+          StopSequence: 8,
           StationID: '1000',
           StationName: {
             Zh_tw: '臺北',
             En: 'Taipei',
           },
-          ArrivalTime: `${9 + i}:30`,
-          DepartureTime: `${9 + i}:30`,
+          ArrivalTime: `${startTime + 4}:30`,
+          DepartureTime: `${startTime + 4}:30`,
           SuspendFlag: 0,
         },
       ],
     };
 
-    schedules.push(schedule);
-  }
+    return schedule;
+  };
 
-  // 生成南下列車
-  for (let i = 1; i <= 10; i++) {
-    const trainNo = `${i}100`;
+  // 建立西部幹線南下列車 (台北->高屏)
+  const generateWestSouthboundTrain = (index: number, prefix = '') => {
+    const trainNo = `${prefix}${index}100`;
     const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
     const trainType = trainTypes[randomTypeIndex];
+    const startTime = 7 + Math.floor(index / 3); // 讓出發時間分散在一天中
 
     const schedule: TrainSchedule = {
       TrainDate: date,
       DailyTrainInfo: {
         TrainNo: trainNo,
-        Direction: 1, // 0:北上，1:南下
+        Direction: 1, // 1:南下
         TrainTypeID: trainType.id,
         TrainTypeName: trainType.name,
         StartingStationID: '1000', // 台北
@@ -430,12 +473,12 @@ export function generateMockTrainSchedules(date: string): TrainSchedule[] {
           Zh_tw: '臺北',
           En: 'Taipei',
         },
-        EndingStationID: '1180', // 台南
+        EndingStationID: '1200', // 高雄
         EndingStationName: {
-          Zh_tw: '台南',
-          En: 'Tainan',
+          Zh_tw: '高雄',
+          En: 'Kaohsiung',
         },
-        TripHeadSign: '開往台南',
+        TripHeadSign: '開往高雄',
         WheelchairFlag: 1,
         BikeFlag: 1,
         BreastFeedingFlag: 1,
@@ -451,8 +494,8 @@ export function generateMockTrainSchedules(date: string): TrainSchedule[] {
             Zh_tw: '臺北',
             En: 'Taipei',
           },
-          ArrivalTime: `${7 + i}:00`,
-          DepartureTime: `${7 + i}:05`,
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
           SuspendFlag: 0,
         },
         {
@@ -462,58 +505,1062 @@ export function generateMockTrainSchedules(date: string): TrainSchedule[] {
             Zh_tw: '板橋',
             En: 'Banqiao',
           },
-          ArrivalTime: `${7 + i}:20`,
-          DepartureTime: `${7 + i}:25`,
+          ArrivalTime: `${startTime}:20`,
+          DepartureTime: `${startTime}:25`,
           SuspendFlag: 0,
         },
         {
           StopSequence: 3,
+          StationID: '1040',
+          StationName: {
+            Zh_tw: '桃園',
+            En: 'Taoyuan',
+          },
+          ArrivalTime: `${startTime}:45`,
+          DepartureTime: `${startTime}:50`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 4,
           StationID: '1060',
           StationName: {
             Zh_tw: '新竹',
             En: 'Hsinchu',
           },
-          ArrivalTime: `${8 + i}:10`,
-          DepartureTime: `${8 + i}:15`,
+          ArrivalTime: `${startTime + 1}:10`,
+          DepartureTime: `${startTime + 1}:15`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 4,
+          StopSequence: 5,
           StationID: '1100',
           StationName: {
             Zh_tw: '台中',
             En: 'Taichung',
           },
-          ArrivalTime: `${9 + i}:00`,
-          DepartureTime: `${9 + i}:05`,
+          ArrivalTime: `${startTime + 2}:00`,
+          DepartureTime: `${startTime + 2}:05`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 5,
+          StopSequence: 6,
           StationID: '1160',
           StationName: {
             Zh_tw: '嘉義',
             En: 'Chiayi',
           },
-          ArrivalTime: `${9 + i}:50`,
-          DepartureTime: `${9 + i}:55`,
+          ArrivalTime: `${startTime + 2}:50`,
+          DepartureTime: `${startTime + 2}:55`,
           SuspendFlag: 0,
         },
         {
-          StopSequence: 6,
+          StopSequence: 7,
           StationID: '1180',
           StationName: {
             Zh_tw: '台南',
             En: 'Tainan',
           },
-          ArrivalTime: `${10 + i}:30`,
-          DepartureTime: `${10 + i}:30`,
+          ArrivalTime: `${startTime + 3}:30`,
+          DepartureTime: `${startTime + 3}:35`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 8,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime + 4}:30`,
+          DepartureTime: `${startTime + 4}:30`,
           SuspendFlag: 0,
         },
       ],
     };
 
+    return schedule;
+  };
+
+  // 建立東部幹線北上列車 (台東->花蓮->宜蘭->台北)
+  const generateEastNorthboundTrain = (index: number) => {
+    const trainNo = `${index}500`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 6 + Math.floor(index / 2);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 0,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1280', // 台東
+        StartingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        EndingStationID: '1000', // 台北
+        EndingStationName: {
+          Zh_tw: '臺北',
+          En: 'Taipei',
+        },
+        TripHeadSign: '開往臺北',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1260',
+          StationName: {
+            Zh_tw: '花蓮',
+            En: 'Hualien',
+          },
+          ArrivalTime: `${startTime + 2}:00`,
+          DepartureTime: `${startTime + 2}:10`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 3,
+          StationID: '1240',
+          StationName: {
+            Zh_tw: '宜蘭',
+            En: 'Yilan',
+          },
+          ArrivalTime: `${startTime + 3}:30`,
+          DepartureTime: `${startTime + 3}:35`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 4,
+          StationID: '1000',
+          StationName: {
+            Zh_tw: '臺北',
+            En: 'Taipei',
+          },
+          ArrivalTime: `${startTime + 4}:30`,
+          DepartureTime: `${startTime + 4}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立東部幹線南下列車 (台北->宜蘭->花蓮->台東)
+  const generateEastSouthboundTrain = (index: number) => {
+    const trainNo = `${index}600`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 7 + Math.floor(index / 2);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 1,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1000', // 台北
+        StartingStationName: {
+          Zh_tw: '臺北',
+          En: 'Taipei',
+        },
+        EndingStationID: '1280', // 台東
+        EndingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        TripHeadSign: '開往台東',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1000',
+          StationName: {
+            Zh_tw: '臺北',
+            En: 'Taipei',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1240',
+          StationName: {
+            Zh_tw: '宜蘭',
+            En: 'Yilan',
+          },
+          ArrivalTime: `${startTime + 1}:00`,
+          DepartureTime: `${startTime + 1}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 3,
+          StationID: '1260',
+          StationName: {
+            Zh_tw: '花蓮',
+            En: 'Hualien',
+          },
+          ArrivalTime: `${startTime + 2}:30`,
+          DepartureTime: `${startTime + 2}:35`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 4,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime + 4}:30`,
+          DepartureTime: `${startTime + 4}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立區間車 (台北-桃園)
+  const generateLocalTrain = (index: number) => {
+    const trainNo = `${index}800`;
+    const startTime = 5 + (index % 18); // 5:00-23:00 每小時一班
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: index % 2, // 交替北上南下
+        TrainTypeID: '6',
+        TrainTypeName: { Zh_tw: '區間車', En: 'Local Train' },
+        StartingStationID: index % 2 === 0 ? '1040' : '1000',
+        StartingStationName: {
+          Zh_tw: index % 2 === 0 ? '桃園' : '臺北',
+          En: index % 2 === 0 ? 'Taoyuan' : 'Taipei',
+        },
+        EndingStationID: index % 2 === 0 ? '1000' : '1040',
+        EndingStationName: {
+          Zh_tw: index % 2 === 0 ? '臺北' : '桃園',
+          En: index % 2 === 0 ? 'Taipei' : 'Taoyuan',
+        },
+        TripHeadSign: index % 2 === 0 ? '開往臺北' : '開往桃園',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes:
+        index % 2 === 0
+          ? [
+              {
+                StopSequence: 1,
+                StationID: '1040',
+                StationName: {
+                  Zh_tw: '桃園',
+                  En: 'Taoyuan',
+                },
+                ArrivalTime: `${startTime}:00`,
+                DepartureTime: `${startTime}:05`,
+                SuspendFlag: 0,
+              },
+              {
+                StopSequence: 2,
+                StationID: '1020',
+                StationName: {
+                  Zh_tw: '板橋',
+                  En: 'Banqiao',
+                },
+                ArrivalTime: `${startTime}:30`,
+                DepartureTime: `${startTime}:32`,
+                SuspendFlag: 0,
+              },
+              {
+                StopSequence: 3,
+                StationID: '1000',
+                StationName: {
+                  Zh_tw: '臺北',
+                  En: 'Taipei',
+                },
+                ArrivalTime: `${startTime}:45`,
+                DepartureTime: `${startTime}:45`,
+                SuspendFlag: 0,
+              },
+            ]
+          : [
+              {
+                StopSequence: 1,
+                StationID: '1000',
+                StationName: {
+                  Zh_tw: '臺北',
+                  En: 'Taipei',
+                },
+                ArrivalTime: `${startTime}:00`,
+                DepartureTime: `${startTime}:05`,
+                SuspendFlag: 0,
+              },
+              {
+                StopSequence: 2,
+                StationID: '1020',
+                StationName: {
+                  Zh_tw: '板橋',
+                  En: 'Banqiao',
+                },
+                ArrivalTime: `${startTime}:15`,
+                DepartureTime: `${startTime}:17`,
+                SuspendFlag: 0,
+              },
+              {
+                StopSequence: 3,
+                StationID: '1040',
+                StationName: {
+                  Zh_tw: '桃園',
+                  En: 'Taoyuan',
+                },
+                ArrivalTime: `${startTime}:45`,
+                DepartureTime: `${startTime}:45`,
+                SuspendFlag: 0,
+              },
+            ],
+    };
+
+    return schedule;
+  };
+
+  // 生成特殊車次（確保特定車次可被搜尋）
+  const specialTrainNumbers = [
+    '101',
+    '202',
+    '303',
+    '404',
+    '505',
+    '606',
+    '707',
+    '808',
+    '909',
+  ];
+  specialTrainNumbers.forEach((trainNo, index) => {
+    const schedule = generateWestNorthboundTrain(index + 1, trainNo);
+    schedule.DailyTrainInfo.TrainNo = trainNo;
     schedules.push(schedule);
+  });
+
+  // 建立南迴線北上列車 (屏東->台東)
+  const generateSouthLinkNorthboundTrain = (index: number) => {
+    const trainNo = `${index}700`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 6 + Math.floor(index / 2);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 0,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1220', // 屏東
+        StartingStationName: {
+          Zh_tw: '屏東',
+          En: 'Pingtung',
+        },
+        EndingStationID: '1280', // 台東
+        EndingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        TripHeadSign: '開往台東',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1220',
+          StationName: {
+            Zh_tw: '屏東',
+            En: 'Pingtung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime}:30`,
+          DepartureTime: `${startTime}:35`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 3,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime + 2}:30`,
+          DepartureTime: `${startTime + 2}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立南迴線南下列車 (台東->屏東)
+  const generateSouthLinkSouthboundTrain = (index: number) => {
+    const trainNo = `${index}710`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 7 + Math.floor(index / 2);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 1,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1280', // 台東
+        StartingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        EndingStationID: '1220', // 屏東
+        EndingStationName: {
+          Zh_tw: '屏東',
+          En: 'Pingtung',
+        },
+        TripHeadSign: '開往屏東',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime + 2}:00`,
+          DepartureTime: `${startTime + 2}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 3,
+          StationID: '1220',
+          StationName: {
+            Zh_tw: '屏東',
+            En: 'Pingtung',
+          },
+          ArrivalTime: `${startTime + 2}:30`,
+          DepartureTime: `${startTime + 2}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立縱谷線北上列車 (台東->花蓮)
+  const generateValleyNorthboundTrain = (index: number) => {
+    const trainNo = `${index}720`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 8 + Math.floor(index / 3);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 0,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1280', // 台東
+        StartingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        EndingStationID: '1260', // 花蓮
+        EndingStationName: {
+          Zh_tw: '花蓮',
+          En: 'Hualien',
+        },
+        TripHeadSign: '開往花蓮',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1260',
+          StationName: {
+            Zh_tw: '花蓮',
+            En: 'Hualien',
+          },
+          ArrivalTime: `${startTime + 2}:00`,
+          DepartureTime: `${startTime + 2}:00`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立縱谷線南下列車 (花蓮->台東)
+  const generateValleySouthboundTrain = (index: number) => {
+    const trainNo = `${index}730`;
+    const randomTypeIndex = Math.floor(Math.random() * trainTypes.length);
+    const trainType = trainTypes[randomTypeIndex];
+    const startTime = 9 + Math.floor(index / 3);
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 1,
+        TrainTypeID: trainType.id,
+        TrainTypeName: trainType.name,
+        StartingStationID: '1260', // 花蓮
+        StartingStationName: {
+          Zh_tw: '花蓮',
+          En: 'Hualien',
+        },
+        EndingStationID: '1280', // 台東
+        EndingStationName: {
+          Zh_tw: '台東',
+          En: 'Taitung',
+        },
+        TripHeadSign: '開往台東',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1260',
+          StationName: {
+            Zh_tw: '花蓮',
+            En: 'Hualien',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1280',
+          StationName: {
+            Zh_tw: '台東',
+            En: 'Taitung',
+          },
+          ArrivalTime: `${startTime + 2}:00`,
+          DepartureTime: `${startTime + 2}:00`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立屏東線北上列車 (屏東->高雄)
+  const generatePingtungNorthboundTrain = (index: number) => {
+    const trainNo = `${index}740`;
+    // 區間車較適合屏東線
+    const startTime = 5 + (index % 18); // 5:00-23:00，每小時一班
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 0,
+        TrainTypeID: '6',
+        TrainTypeName: { Zh_tw: '區間車', En: 'Local Train' },
+        StartingStationID: '1220', // 屏東
+        StartingStationName: {
+          Zh_tw: '屏東',
+          En: 'Pingtung',
+        },
+        EndingStationID: '1200', // 高雄
+        EndingStationName: {
+          Zh_tw: '高雄',
+          En: 'Kaohsiung',
+        },
+        TripHeadSign: '開往高雄',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1220',
+          StationName: {
+            Zh_tw: '屏東',
+            En: 'Pingtung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime}:30`,
+          DepartureTime: `${startTime}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立屏東線南下列車 (高雄->屏東)
+  const generatePingtungSouthboundTrain = (index: number) => {
+    const trainNo = `${index}750`;
+    // 區間車較適合屏東線
+    const startTime = 5 + (index % 18); // 5:00-23:00，每小時一班
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: 1,
+        TrainTypeID: '6',
+        TrainTypeName: { Zh_tw: '區間車', En: 'Local Train' },
+        StartingStationID: '1200', // 高雄
+        StartingStationName: {
+          Zh_tw: '高雄',
+          En: 'Kaohsiung',
+        },
+        EndingStationID: '1220', // 屏東
+        EndingStationName: {
+          Zh_tw: '屏東',
+          En: 'Pingtung',
+        },
+        TripHeadSign: '開往屏東',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: [
+        {
+          StopSequence: 1,
+          StationID: '1200',
+          StationName: {
+            Zh_tw: '高雄',
+            En: 'Kaohsiung',
+          },
+          ArrivalTime: `${startTime}:00`,
+          DepartureTime: `${startTime}:05`,
+          SuspendFlag: 0,
+        },
+        {
+          StopSequence: 2,
+          StationID: '1220',
+          StationName: {
+            Zh_tw: '屏東',
+            En: 'Pingtung',
+          },
+          ArrivalTime: `${startTime}:30`,
+          DepartureTime: `${startTime}:30`,
+          SuspendFlag: 0,
+        },
+      ],
+    };
+
+    return schedule;
+  };
+
+  // 建立中部區間車 (台中-彰化-斗六)
+  const generateCentralLocalTrain = (index: number) => {
+    const trainNo = `${index}760`;
+    // 區間車
+    const startTime = 6 + (index % 16); // 6:00-22:00，每小時一班
+    const isNorthbound = index % 2 === 0;
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: isNorthbound ? 0 : 1,
+        TrainTypeID: '6',
+        TrainTypeName: { Zh_tw: '區間車', En: 'Local Train' },
+        StartingStationID: isNorthbound ? '1140' : '1100', // 斗六 or 台中
+        StartingStationName: {
+          Zh_tw: isNorthbound ? '斗六' : '台中',
+          En: isNorthbound ? 'Douliu' : 'Taichung',
+        },
+        EndingStationID: isNorthbound ? '1100' : '1140', // 台中 or 斗六
+        EndingStationName: {
+          Zh_tw: isNorthbound ? '台中' : '斗六',
+          En: isNorthbound ? 'Taichung' : 'Douliu',
+        },
+        TripHeadSign: isNorthbound ? '開往台中' : '開往斗六',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: isNorthbound
+        ? [
+            {
+              StopSequence: 1,
+              StationID: '1140',
+              StationName: {
+                Zh_tw: '斗六',
+                En: 'Douliu',
+              },
+              ArrivalTime: `${startTime}:00`,
+              DepartureTime: `${startTime}:05`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 2,
+              StationID: '1120',
+              StationName: {
+                Zh_tw: '彰化',
+                En: 'Changhua',
+              },
+              ArrivalTime: `${startTime}:40`,
+              DepartureTime: `${startTime}:42`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 3,
+              StationID: '1100',
+              StationName: {
+                Zh_tw: '台中',
+                En: 'Taichung',
+              },
+              ArrivalTime: `${startTime + 1}:15`,
+              DepartureTime: `${startTime + 1}:15`,
+              SuspendFlag: 0,
+            },
+          ]
+        : [
+            {
+              StopSequence: 1,
+              StationID: '1100',
+              StationName: {
+                Zh_tw: '台中',
+                En: 'Taichung',
+              },
+              ArrivalTime: `${startTime}:00`,
+              DepartureTime: `${startTime}:05`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 2,
+              StationID: '1120',
+              StationName: {
+                Zh_tw: '彰化',
+                En: 'Changhua',
+              },
+              ArrivalTime: `${startTime}:35`,
+              DepartureTime: `${startTime}:37`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 3,
+              StationID: '1140',
+              StationName: {
+                Zh_tw: '斗六',
+                En: 'Douliu',
+              },
+              ArrivalTime: `${startTime + 1}:15`,
+              DepartureTime: `${startTime + 1}:15`,
+              SuspendFlag: 0,
+            },
+          ],
+    };
+
+    return schedule;
+  };
+
+  // 建立北部區間車 (台北-新竹-苗栗)
+  const generateNorthLocalTrain = (index: number) => {
+    const trainNo = `${index}770`;
+    // 區間車
+    const startTime = 6 + (index % 16); // 6:00-22:00，每小時一班
+    const isNorthbound = index % 2 === 0;
+
+    const schedule: TrainSchedule = {
+      TrainDate: date,
+      DailyTrainInfo: {
+        TrainNo: trainNo,
+        Direction: isNorthbound ? 0 : 1,
+        TrainTypeID: '6',
+        TrainTypeName: { Zh_tw: '區間車', En: 'Local Train' },
+        StartingStationID: isNorthbound ? '1080' : '1000', // 苗栗 or 台北
+        StartingStationName: {
+          Zh_tw: isNorthbound ? '苗栗' : '臺北',
+          En: isNorthbound ? 'Miaoli' : 'Taipei',
+        },
+        EndingStationID: isNorthbound ? '1000' : '1080', // 台北 or 苗栗
+        EndingStationName: {
+          Zh_tw: isNorthbound ? '臺北' : '苗栗',
+          En: isNorthbound ? 'Taipei' : 'Miaoli',
+        },
+        TripHeadSign: isNorthbound ? '開往臺北' : '開往苗栗',
+        WheelchairFlag: 1,
+        BikeFlag: 1,
+        BreastFeedingFlag: 1,
+        DailyFlag: 1,
+        ServiceAddedFlag: 0,
+        Note: '',
+      },
+      StopTimes: isNorthbound
+        ? [
+            {
+              StopSequence: 1,
+              StationID: '1080',
+              StationName: {
+                Zh_tw: '苗栗',
+                En: 'Miaoli',
+              },
+              ArrivalTime: `${startTime}:00`,
+              DepartureTime: `${startTime}:05`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 2,
+              StationID: '1060',
+              StationName: {
+                Zh_tw: '新竹',
+                En: 'Hsinchu',
+              },
+              ArrivalTime: `${startTime}:35`,
+              DepartureTime: `${startTime}:37`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 3,
+              StationID: '1040',
+              StationName: {
+                Zh_tw: '桃園',
+                En: 'Taoyuan',
+              },
+              ArrivalTime: `${startTime + 1}:00`,
+              DepartureTime: `${startTime + 1}:02`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 4,
+              StationID: '1020',
+              StationName: {
+                Zh_tw: '板橋',
+                En: 'Banqiao',
+              },
+              ArrivalTime: `${startTime + 1}:25`,
+              DepartureTime: `${startTime + 1}:27`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 5,
+              StationID: '1000',
+              StationName: {
+                Zh_tw: '臺北',
+                En: 'Taipei',
+              },
+              ArrivalTime: `${startTime + 1}:45`,
+              DepartureTime: `${startTime + 1}:45`,
+              SuspendFlag: 0,
+            },
+          ]
+        : [
+            {
+              StopSequence: 1,
+              StationID: '1000',
+              StationName: {
+                Zh_tw: '臺北',
+                En: 'Taipei',
+              },
+              ArrivalTime: `${startTime}:00`,
+              DepartureTime: `${startTime}:05`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 2,
+              StationID: '1020',
+              StationName: {
+                Zh_tw: '板橋',
+                En: 'Banqiao',
+              },
+              ArrivalTime: `${startTime}:20`,
+              DepartureTime: `${startTime}:22`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 3,
+              StationID: '1040',
+              StationName: {
+                Zh_tw: '桃園',
+                En: 'Taoyuan',
+              },
+              ArrivalTime: `${startTime}:45`,
+              DepartureTime: `${startTime}:47`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 4,
+              StationID: '1060',
+              StationName: {
+                Zh_tw: '新竹',
+                En: 'Hsinchu',
+              },
+              ArrivalTime: `${startTime + 1}:15`,
+              DepartureTime: `${startTime + 1}:17`,
+              SuspendFlag: 0,
+            },
+            {
+              StopSequence: 5,
+              StationID: '1080',
+              StationName: {
+                Zh_tw: '苗栗',
+                En: 'Miaoli',
+              },
+              ArrivalTime: `${startTime + 1}:45`,
+              DepartureTime: `${startTime + 1}:45`,
+              SuspendFlag: 0,
+            },
+          ],
+    };
+
+    return schedule;
+  };
+
+  // 生成西部幹線北上和南下列車
+  for (let i = 1; i <= 15; i++) {
+    schedules.push(generateWestNorthboundTrain(i));
+    schedules.push(generateWestSouthboundTrain(i));
+  }
+
+  // 生成東部幹線北上和南下列車
+  for (let i = 1; i <= 10; i++) {
+    schedules.push(generateEastNorthboundTrain(i));
+    schedules.push(generateEastSouthboundTrain(i));
+  }
+
+  // 生成南迴線列車
+  for (let i = 1; i <= 8; i++) {
+    schedules.push(generateSouthLinkNorthboundTrain(i));
+    schedules.push(generateSouthLinkSouthboundTrain(i));
+  }
+
+  // 生成縱谷線列車
+  for (let i = 1; i <= 8; i++) {
+    schedules.push(generateValleyNorthboundTrain(i));
+    schedules.push(generateValleySouthboundTrain(i));
+  }
+
+  // 生成屏東線列車
+  for (let i = 1; i <= 12; i++) {
+    schedules.push(generatePingtungNorthboundTrain(i));
+    schedules.push(generatePingtungSouthboundTrain(i));
+  }
+
+  // 生成中部區間車
+  for (let i = 1; i <= 16; i++) {
+    schedules.push(generateCentralLocalTrain(i));
+  }
+
+  // 生成北部區間車
+  for (let i = 1; i <= 16; i++) {
+    schedules.push(generateNorthLocalTrain(i));
+  }
+
+  // 生成台北到桃園區間車
+  for (let i = 1; i <= 18; i++) {
+    schedules.push(generateLocalTrain(i));
   }
 
   return schedules;

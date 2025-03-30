@@ -120,12 +120,6 @@ export async function request<T>(
 
     const data = await response.json();
 
-    // 請求成功，記錄結果摘要
-    console.log(
-      `API 請求成功: ${path}`,
-      Array.isArray(data) ? `獲取 ${data.length} 項數據` : '獲取數據成功'
-    );
-
     return data;
   } catch (error) {
     console.error('API request failed:', error);
