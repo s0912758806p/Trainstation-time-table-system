@@ -1,5 +1,5 @@
-import React from 'react';
-import { Layout, Menu, Avatar, Dropdown, Button, Space } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Avatar, Dropdown, Button, Space, Drawer } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   ScheduleOutlined,
@@ -14,6 +14,7 @@ import {
   QuestionCircleOutlined,
   EnvironmentOutlined,
   InfoCircleOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -23,18 +24,47 @@ import DateTime from './DateTime';
 const { Header, Content, Sider } = Layout;
 
 const TrainLayout: React.FC = () => {
-  const [collapsed, setCollapsed] = React.useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 監聽窗口大小變化
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile && mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+      }
+      // 在小屏幕上自動折疊側欄
+      if (mobile && !collapsed) {
+        setCollapsed(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 初始化時執行一次
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [collapsed, mobileDrawerOpen]);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
-  const items = [
+  const handleMenuClick = (path: string) => {
+    navigate(path);
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
+  };
+
+  const userMenuItems = [
     {
       key: 'profile',
       icon: <UserOutlined />,
@@ -49,48 +79,75 @@ const TrainLayout: React.FC = () => {
     },
   ];
 
+  // 保持與原始設計一致的導航項目格式
   const navigationItems = [
     {
       key: '/dashboard',
       icon: <HomeOutlined />,
-      label: <Link to="/dashboard">首頁</Link>,
+      label: isMobile ? '首頁' : <Link to="/dashboard">首頁</Link>,
+      onClick: isMobile ? () => handleMenuClick('/dashboard') : undefined,
     },
     {
       key: '/schedule',
       icon: <ScheduleOutlined />,
-      label: <Link to="/schedule">時刻表查詢</Link>,
+      label: isMobile ? '時刻表查詢' : <Link to="/schedule">時刻表查詢</Link>,
+      onClick: isMobile ? () => handleMenuClick('/schedule') : undefined,
     },
     {
       key: '/tickets',
       icon: <SearchOutlined />,
-      label: <Link to="/tickets">車票查詢</Link>,
+      label: isMobile ? '車票查詢' : <Link to="/tickets">車票查詢</Link>,
+      onClick: isMobile ? () => handleMenuClick('/tickets') : undefined,
     },
     {
       key: '/orders',
       icon: <ReconciliationOutlined />,
-      label: <Link to="/orders">訂單管理</Link>,
+      label: isMobile ? '訂單管理' : <Link to="/orders">訂單管理</Link>,
+      onClick: isMobile ? () => handleMenuClick('/orders') : undefined,
     },
     {
       key: '/train-details',
       icon: <InfoCircleOutlined />,
-      label: <Link to="/train-details">列車詳情</Link>,
+      label: isMobile ? '列車詳情' : <Link to="/train-details">列車詳情</Link>,
+      onClick: isMobile ? () => handleMenuClick('/train-details') : undefined,
     },
     {
       key: '/station-info',
       icon: <EnvironmentOutlined />,
-      label: <Link to="/station-info">站點資訊</Link>,
+      label: isMobile ? '站點資訊' : <Link to="/station-info">站點資訊</Link>,
+      onClick: isMobile ? () => handleMenuClick('/station-info') : undefined,
     },
     {
       key: '/profile',
       icon: <UserOutlined />,
-      label: <Link to="/profile">會員中心</Link>,
+      label: isMobile ? '會員中心' : <Link to="/profile">會員中心</Link>,
+      onClick: isMobile ? () => handleMenuClick('/profile') : undefined,
     },
     {
       key: '/faq',
       icon: <QuestionCircleOutlined />,
-      label: <Link to="/faq">幫助中心</Link>,
+      label: isMobile ? '幫助中心' : <Link to="/faq">幫助中心</Link>,
+      onClick: isMobile ? () => handleMenuClick('/faq') : undefined,
     },
   ];
+
+  // 移動端抽屜菜單
+  const mobileMenu = (
+    <Drawer
+      title="功能選單"
+      placement="left"
+      onClose={() => setMobileDrawerOpen(false)}
+      open={mobileDrawerOpen}
+      bodyStyle={{ padding: 0 }}
+    >
+      <Menu
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        items={navigationItems}
+        style={{ borderRight: 0 }}
+      />
+    </Drawer>
+  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -99,86 +156,126 @@ const TrainLayout: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
+          padding: isMobile ? '0 12px' : '0 24px',
           background: '#fff',
           boxShadow: '0 1px 4px rgba(0, 21, 41, 0.08)',
+          height: 64,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
         }}
       >
-        <div className="logo-container" style={{ marginRight: 'auto' }}>
-          <Link to="/">
-            <h1 style={{ margin: 0, fontSize: '1.5rem' }}>台鐵時刻查詢系統</h1>
-          </Link>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {isMobile && (
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setMobileDrawerOpen(true)}
+              style={{ marginRight: 8 }}
+            />
+          )}
+
+          <div className="logo-container">
+            <Link to="/">
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: isMobile ? '1.1rem' : '1.5rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                台鐵時刻查詢系統
+              </h1>
+            </Link>
+          </div>
         </div>
 
-        <div
-          className="center-content"
-          style={{ marginRight: 'auto', marginLeft: '32px' }}
-        >
-          <DateTime
-            style={{
-              fontSize: '1rem',
-              fontWeight: 'normal',
-              color: '#666',
-              marginLeft: '24px',
-            }}
-          />
-        </div>
+        {!isMobile && (
+          <div
+            className="center-content"
+            style={{ marginRight: 'auto', marginLeft: '32px' }}
+          >
+            <DateTime
+              style={{
+                fontSize: '1rem',
+                fontWeight: 'normal',
+                color: '#666',
+              }}
+            />
+          </div>
+        )}
 
         <Space>
-          <Button
-            type="text"
-            icon={<BellOutlined />}
-            style={{ marginRight: 12 }}
-          />
-          <Dropdown menu={{ items }} placement="bottomRight">
+          {!isMobile && (
+            <Button
+              type="text"
+              icon={<BellOutlined />}
+              style={{ marginRight: 12 }}
+            />
+          )}
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Space style={{ cursor: 'pointer' }}>
               <Avatar
                 style={{ backgroundColor: '#1890ff' }}
                 icon={<UserOutlined />}
               />
-              <span>{user?.username || '用戶'}</span>
+              {!isMobile && <span>{user?.username || '用戶'}</span>}
             </Space>
           </Dropdown>
         </Space>
       </Header>
 
       <Layout>
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          width={200}
-          theme="light"
-          trigger={null}
-          style={{
-            overflow: 'auto',
-            height: '100vh',
-            position: 'sticky',
-            top: 0,
-            left: 0,
-          }}
-        >
-          <div className="flex justify-end p-2">
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
+        {/* 桌面版側欄 */}
+        {!isMobile && (
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={setCollapsed}
+            width={200}
+            theme="light"
+            trigger={null}
+            style={{
+              overflow: 'auto',
+              height: 'calc(100vh - 64px)',
+              position: 'sticky',
+              top: 64,
+              left: 0,
+              zIndex: 999,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                padding: 8,
+              }}
+            >
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+              />
+            </div>
+            <Menu
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={navigationItems}
+              style={{ borderRight: 0 }}
             />
-          </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={navigationItems}
-            style={{ borderRight: 0 }}
-          />
-        </Sider>
-        <Layout style={{ padding: '0 0 24px' }}>
+          </Sider>
+        )}
+
+        {/* 移動端抽屜菜單 */}
+        {isMobile && mobileMenu}
+
+        <Layout style={{ padding: 0 }}>
           <Content
             style={{
               margin: 0,
               minHeight: 280,
               background: '#f5f5f5',
-              overflow: 'auto',
+              padding: isMobile ? 12 : 24,
             }}
           >
             <Outlet />

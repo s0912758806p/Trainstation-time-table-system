@@ -36,7 +36,7 @@ import {
   CloseCircleOutlined,
   SoundOutlined,
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import dayjs, { Dayjs } from 'dayjs';
@@ -84,6 +84,7 @@ const DashboardPage: React.FC = () => {
     {}
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   // 載入資料
   useEffect(() => {

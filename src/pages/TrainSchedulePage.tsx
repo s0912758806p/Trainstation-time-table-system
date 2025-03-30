@@ -51,6 +51,7 @@ const TrainSchedulePage: React.FC = () => {
     Array<{ value: string; label: string }>
   >([]);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     // 載入車站資料
@@ -70,6 +71,15 @@ const TrainSchedulePage: React.FC = () => {
     };
 
     loadStations();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const columns = [
@@ -210,14 +220,14 @@ const TrainSchedulePage: React.FC = () => {
     });
   };
 
-  const handleSearch = async () => {
-    if (!startDate && !trainNumber) {
-      message.error('請至少填寫日期或車次');
+  const handleRouteSearch = async () => {
+    if (!startDate) {
+      message.error('請選擇日期');
       return;
     }
 
-    if (!trainNumber && (!departureStation || !arrivalStation)) {
-      message.error('搜尋班次時請填寫出發站和到達站');
+    if (!departureStation || !arrivalStation) {
+      message.error('請選擇出發站和抵達站');
       return;
     }
 
@@ -226,22 +236,12 @@ const TrainSchedulePage: React.FC = () => {
     setError(null);
 
     try {
-      const formattedDate = startDate
-        ? startDate.format('YYYY-MM-DD')
-        : new Date().toISOString().split('T')[0];
-      let trainData: ApiTrainSchedule[] = [];
-
-      if (trainNumber) {
-        // 根據車次號碼查詢
-        trainData = await getTrainByNumber(trainNumber, formattedDate);
-      } else {
-        // 根據起訖站查詢
-        trainData = await getTrainsByRoute(
-          departureStation,
-          arrivalStation,
-          formattedDate
-        );
-      }
+      const formattedDate = startDate.format('YYYY-MM-DD');
+      const trainData = await getTrainsByRoute(
+        departureStation,
+        arrivalStation,
+        formattedDate
+      );
 
       const formattedData = formatScheduleData(trainData);
       setSchedules(formattedData);
@@ -259,19 +259,55 @@ const TrainSchedulePage: React.FC = () => {
     }
   };
 
+  const handleTrainSearch = async () => {
+    if (!startDate) {
+      message.error('請選擇日期');
+      return;
+    }
+
+    if (!trainNumber) {
+      message.error('請輸入車次');
+      return;
+    }
+
+    setLoading(true);
+    setSchedules([]);
+    setError(null);
+
+    try {
+      const formattedDate = startDate.format('YYYY-MM-DD');
+      const trainData = await getTrainByNumber(trainNumber, formattedDate);
+
+      const formattedData = formatScheduleData(trainData);
+      setSchedules(formattedData);
+
+      if (formattedData.length === 0) {
+        message.info('查無此車次');
+      } else {
+        message.success('查詢成功');
+      }
+    } catch (error) {
+      console.error('查詢失敗，請稍後再試', error);
+      setError('無法獲取列車資料，請稍後再試');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 車站查詢頁面
   const stationSearchContent = (
     <Card className="mb-6 shadow-sm">
       <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">出發日期</label>
           <DatePicker
             className="w-full"
             placeholder="選擇日期"
             onChange={setStartDate}
+            value={startDate}
           />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">出發站</label>
           <Select
             className="w-full"
@@ -280,15 +316,10 @@ const TrainSchedulePage: React.FC = () => {
             optionFilterProp="children"
             value={departureStation}
             onChange={setDepartureStation}
-          >
-            {stations.map((station) => (
-              <Option key={station.value} value={station.value}>
-                {station.label}
-              </Option>
-            ))}
-          </Select>
+            options={stations}
+          />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">到達站</label>
           <Select
             className="w-full"
@@ -297,20 +328,15 @@ const TrainSchedulePage: React.FC = () => {
             optionFilterProp="children"
             value={arrivalStation}
             onChange={setArrivalStation}
-          >
-            {stations.map((station) => (
-              <Option key={station.value} value={station.value}>
-                {station.label}
-              </Option>
-            ))}
-          </Select>
+            options={stations}
+          />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">&nbsp;</label>
           <Button
             type="primary"
             className="w-full"
-            onClick={handleSearch}
+            onClick={handleRouteSearch}
             loading={loading}
             icon={<SearchOutlined />}
           >
@@ -325,15 +351,16 @@ const TrainSchedulePage: React.FC = () => {
   const trainNumberSearchContent = (
     <Card className="mb-6 shadow-sm">
       <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">出發日期</label>
           <DatePicker
             className="w-full"
             placeholder="選擇日期"
             onChange={setStartDate}
+            value={startDate}
           />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">車次</label>
           <Input
             placeholder="請輸入車次號碼"
@@ -341,12 +368,12 @@ const TrainSchedulePage: React.FC = () => {
             onChange={(e) => setTrainNumber(e.target.value)}
           />
         </div>
-        <div className="flex-1 min-w-[200px]">
+        <div className={isMobile ? 'w-full' : 'flex-1 min-w-[200px]'}>
           <label className="block mb-2 font-medium">&nbsp;</label>
           <Button
             type="primary"
             className="w-full"
-            onClick={handleSearch}
+            onClick={handleTrainSearch}
             loading={loading}
             icon={<SearchOutlined />}
           >
@@ -392,16 +419,88 @@ const TrainSchedulePage: React.FC = () => {
         {error ? (
           <div className="text-red-500">{error}</div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={schedules}
-            rowKey="trainNo"
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-            bordered
-          />
+          <div className="overflow-x-auto">
+            {isMobile && schedules.length > 0 ? (
+              <Table
+                columns={[
+                  {
+                    title: '車次/時間',
+                    key: 'trainInfo',
+                    render: (record: DisplayTrainSchedule) => (
+                      <div>
+                        <div>
+                          <Tag color="blue">{record.trainNo}</Tag>{' '}
+                          {record.trainTypeName}
+                        </div>
+                        <div className="text-sm mt-1">
+                          <ClockCircleOutlined className="mr-1" />{' '}
+                          {record.departureTime} → {record.arrivalTime}
+                        </div>
+                      </div>
+                    ),
+                  },
+                  {
+                    title: '站點',
+                    key: 'stations',
+                    render: (record: DisplayTrainSchedule) => (
+                      <div>
+                        <div className="text-sm">
+                          <EnvironmentOutlined className="mr-1" />{' '}
+                          {record.departureStation} → {record.arrivalStation}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {record.duration}
+                        </div>
+                      </div>
+                    ),
+                  },
+                  {
+                    title: '',
+                    key: 'action',
+                    render: (record: DisplayTrainSchedule) => (
+                      <Button
+                        type="primary"
+                        size="small"
+                        onClick={() => handleViewDetails(record)}
+                      >
+                        詳情
+                      </Button>
+                    ),
+                  },
+                ]}
+                dataSource={schedules}
+                rowKey="trainNo"
+                loading={loading}
+                pagination={{ pageSize: 10, size: 'small' }}
+                size="small"
+              />
+            ) : (
+              <Table
+                columns={columns}
+                dataSource={schedules}
+                rowKey="trainNo"
+                loading={loading}
+                pagination={{ pageSize: 10 }}
+                bordered
+                scroll={{ x: 'max-content' }}
+              />
+            )}
+          </div>
         )}
       </Card>
+
+      <style>
+        {`
+        @media (max-width: 768px) {
+          .ant-picker, .ant-select, .ant-input {
+            width: 100%;
+          }
+          .train-schedule-page .ant-card-body {
+            padding: 16px;
+          }
+        }
+        `}
+      </style>
     </div>
   );
 };

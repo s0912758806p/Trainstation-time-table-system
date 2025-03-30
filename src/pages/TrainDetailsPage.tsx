@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Table, Card, Typography, Spin, Alert, Button } from 'antd';
+import {
+  Table,
+  Card,
+  Typography,
+  Spin,
+  Alert,
+  Button,
+  List,
+  Divider,
+  Tag,
+  Space,
+} from 'antd';
 import { getTrainByNumber, TrainSchedule } from '../api/train';
 import { getMockTrainByNumber } from '../api/mockTrainDetails';
 import dayjs from 'dayjs';
@@ -39,6 +50,7 @@ const TrainDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [trainData, setTrainData] = useState<TrainSchedule | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     const fetchTrainDetails = async () => {
@@ -66,6 +78,15 @@ const TrainDetailsPage = () => {
 
     fetchTrainDetails();
   }, [trainNo, date]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const columns = [
     {
@@ -131,6 +152,38 @@ const TrainDetailsPage = () => {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const renderMobileStopsList = () => {
+    const stopData = getStopData();
+
+    return (
+      <List
+        dataSource={stopData}
+        renderItem={(item) => (
+          <List.Item className="py-3 flex flex-col items-start">
+            <div className="flex items-center w-full">
+              <div className="mr-3">
+                <Tag color="blue">{item.sequence}</Tag>
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-medium">{item.stationName}</div>
+                <div className="flex justify-between mt-1 text-gray-500 text-sm">
+                  <div>
+                    <Text type="secondary">到站：</Text>
+                    <Text>{item.arrivalTime}</Text>
+                  </div>
+                  <div>
+                    <Text type="secondary">發車：</Text>
+                    <Text>{item.departureTime}</Text>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </List.Item>
+        )}
+      />
+    );
   };
 
   if (loading) {
@@ -210,14 +263,29 @@ const TrainDetailsPage = () => {
         </div>
 
         <Title level={4}>停靠站資訊</Title>
-        <Table
-          columns={columns}
-          dataSource={getStopData()}
-          pagination={false}
-          size="middle"
-          bordered
-        />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={getStopData()}
+            pagination={false}
+            size={isMobile ? 'small' : 'middle'}
+            bordered
+          />
+        </div>
       </Card>
+
+      <style>
+        {`
+        @media (max-width: 768px) {
+          .ant-table {
+            font-size: 14px;
+          }
+          .ant-table-cell {
+            padding: 8px;
+          }
+        }
+        `}
+      </style>
     </div>
   );
 };
