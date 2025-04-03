@@ -1,8 +1,8 @@
 import { login } from '../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
-import { Input, Button, Form, Typography, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Input, Button, Form, Typography, message, Divider } from 'antd';
+import { UserOutlined, LockOutlined, TeamOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginApi, LoginRequestParams } from '../api/auth';
 import '../assets/styles/trainLoginPage.scss';
@@ -17,6 +17,7 @@ const TrainLoginPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
+  const [guestLoading, setGuestLoading] = useState<boolean>(false);
 
   const handleLogin = async (values: LoginFormValues) => {
     const { username, password } = values;
@@ -52,6 +53,41 @@ const TrainLoginPage: React.FC = () => {
     }
   };
 
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+
+    try {
+      // 模擬訪客登入
+      setTimeout(() => {
+        // 創建訪客用戶對象
+        const guestUser = {
+          id: 'guest-' + Date.now(),
+          username: '訪客用戶',
+          name: '訪客',
+          email: '',
+          avatar: '',
+          role: 'guest',
+          points: 0,
+          ticketCount: 0,
+          token: 'guest-token-' + Math.random().toString(36).substring(2),
+          refreshToken: '',
+          expiresIn: 3600,
+        };
+
+        // 更新 Redux 狀態
+        dispatch(login(guestUser));
+
+        setGuestLoading(false);
+        navigate('/schedule');
+        message.success('以訪客身份登入成功');
+      }, 500);
+    } catch (error) {
+      console.error('Guest login failed:', error);
+      setGuestLoading(false);
+      message.error('訪客登入失敗，請稍後再試');
+    }
+  };
+
   return (
     <div className="login-page">
       <Title level={2} style={{ textAlign: 'center' }}>
@@ -71,7 +107,7 @@ const TrainLoginPage: React.FC = () => {
           <Input
             prefix={<UserOutlined />}
             placeholder="用戶名"
-            disabled={loading}
+            disabled={loading || guestLoading}
           />
         </Form.Item>
 
@@ -82,20 +118,24 @@ const TrainLoginPage: React.FC = () => {
           <Input.Password
             prefix={<LockOutlined />}
             placeholder="密碼"
-            disabled={loading}
+            disabled={loading || guestLoading}
           />
         </Form.Item>
 
         <Form.Item name="remember" valuePropName="checked">
           <Form.Item name="remember" valuePropName="checked" noStyle>
-            <Button type="link" style={{ padding: 0 }} disabled={loading}>
+            <Button
+              type="link"
+              style={{ padding: 0 }}
+              disabled={loading || guestLoading}
+            >
               記住我
             </Button>
           </Form.Item>
           <Button
             type="link"
             style={{ float: 'right', padding: 0 }}
-            disabled={loading}
+            disabled={loading || guestLoading}
           >
             忘記密碼?
           </Button>
@@ -108,10 +148,26 @@ const TrainLoginPage: React.FC = () => {
             className="login-form-button"
             block
             loading={loading}
+            disabled={guestLoading}
           >
             登錄
           </Button>
-          或 <Link to="/register">立即註冊</Link>
+        </Form.Item>
+
+        <Divider>或</Divider>
+
+        <Form.Item>
+          <Button
+            type="default"
+            icon={<TeamOutlined />}
+            className="guest-login-button"
+            block
+            onClick={handleGuestLogin}
+            loading={guestLoading}
+            disabled={loading}
+          >
+            以訪客身份登入
+          </Button>
         </Form.Item>
       </Form>
     </div>
