@@ -1,7 +1,8 @@
-# Train Station Time Table System
+# Trainstation Time Table System
 
 A comprehensive Taiwan Railway train schedule inquiry system using simulated data, providing complete train information with an intuitive query interface.
 
+![Trainstation Time Tabel System](./src//assets/Screenshot-trainstation.png)
 **Demo:** [Live Demo](https://trainstation-time-table-gr925.vercel.app)
 
 ## Features
