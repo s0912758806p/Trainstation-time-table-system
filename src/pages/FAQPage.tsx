@@ -530,7 +530,7 @@ const FAQPage: React.FC = () => {
                 header={
                   <Text strong>
                     <QuestionCircleOutlined
-                      style={{ color: '#1890ff', marginRight: 8 }}
+                      style={{ color: 'var(--brand)', marginRight: 8 }}
                     />
                     {item.question}
                   </Text>
@@ -559,7 +559,7 @@ const FAQPage: React.FC = () => {
                 header={
                   <Text strong>
                     <QuestionCircleOutlined
-                      style={{ color: '#1890ff', marginRight: 8 }}
+                      style={{ color: 'var(--brand)', marginRight: 8 }}
                     />
                     {item.question}
                   </Text>
@@ -588,7 +588,7 @@ const FAQPage: React.FC = () => {
                 header={
                   <Text strong>
                     <QuestionCircleOutlined
-                      style={{ color: '#1890ff', marginRight: 8 }}
+                      style={{ color: 'var(--brand)', marginRight: 8 }}
                     />
                     {item.question}
                   </Text>
@@ -617,7 +617,7 @@ const FAQPage: React.FC = () => {
                 header={
                   <Text strong>
                     <QuestionCircleOutlined
-                      style={{ color: '#1890ff', marginRight: 8 }}
+                      style={{ color: 'var(--brand)', marginRight: 8 }}
                     />
                     {item.question}
                   </Text>
@@ -710,7 +710,7 @@ const FAQPage: React.FC = () => {
                       header={
                         <Text strong>
                           <QuestionCircleOutlined
-                            style={{ color: '#1890ff', marginRight: 8 }}
+                            style={{ color: 'var(--brand)', marginRight: 8 }}
                           />
                           {item.question}
                         </Text>
@@ -821,7 +821,7 @@ const FAQPage: React.FC = () => {
                   avatar={
                     <Avatar
                       icon={item.icon}
-                      style={{ backgroundColor: '#1890ff' }}
+                      style={{ background: 'var(--brand)' }}
                     />
                   }
                   title={item.title}

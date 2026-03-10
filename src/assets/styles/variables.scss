@@ -1,26 +1,60 @@
-// 全局 SCSS 變量
-$primary-color: #1890ff;
-$secondary-color: #52c41a;
-$error-color: #f5222d;
-$warning-color: #faad14;
-$success-color: #52c41a;
+// ─── Brand (mirrors CSS custom properties in index.scss) ─────────────────
+$brand-primary:  #6366f1;
+$brand-dark:     #4f46e5;
+$brand-light:    #818cf8;
 
-// 自定義字體大小
-$font-size-small: 12px;
+// ─── Light theme defaults ─────────────────────────────────────────────────
+$bg-page:     #f4f7fa;
+$bg-surface:  #ffffff;
+$bg-subtle:   #f8fafc;
+
+$sidebar-bg:      #ffffff;
+$sidebar-border:  #e8edf2;
+$sidebar-item:    #6b7280;
+$sidebar-active:  #4f46e5;
+
+$header-bg:     #ffffff;
+$header-border: #f0f2f5;
+
+$text-primary:   #111827;
+$text-secondary: #4b5563;
+$text-muted:     #9ca3af;
+
+$border:        #e8edf2;
+$border-subtle: #f0f2f5;
+
+// ─── Semantic ─────────────────────────────────────────────────────────────
+$color-success: #22c55e;
+$color-warning: #f59e0b;
+$color-danger:  #ef4444;
+$color-price:   #f97316;
+
+// ─── Shadows ─────────────────────────────────────────────────────────────
+$shadow-xs: 0 1px 2px rgba(17, 24, 39, 0.04);
+$shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.07), 0 1px 2px rgba(17, 24, 39, 0.04);
+$shadow-md: 0 4px 8px rgba(17, 24, 39, 0.08), 0 2px 4px rgba(17, 24, 39, 0.04);
+$shadow-lg: 0 12px 24px rgba(17, 24, 39, 0.10), 0 4px 8px rgba(17, 24, 39, 0.04);
+
+// ─── Typography ──────────────────────────────────────────────────────────
+$font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Segoe UI', sans-serif;
+$font-size-xs:   11px;
+$font-size-sm:   13px;
 $font-size-base: 14px;
-$font-size-large: 16px;
-$font-size-xlarge: 18px;
+$font-size-md:   15px;
+$font-size-lg:   16px;
+$font-size-xl:   18px;
 
-// 斷點
+// ─── Spacing ─────────────────────────────────────────────────────────────
+$spacing-xs:  4px;
+$spacing-sm:  8px;
+$spacing-md:  16px;
+$spacing-lg:  24px;
+$spacing-xl:  32px;
+$spacing-2xl: 48px;
+
+// ─── Breakpoints ─────────────────────────────────────────────────────────
 $screen-xs: 480px;
 $screen-sm: 576px;
 $screen-md: 768px;
 $screen-lg: 992px;
 $screen-xl: 1200px;
-
-// 間距
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$spacing-xl: 32px; 

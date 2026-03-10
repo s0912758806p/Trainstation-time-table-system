@@ -367,7 +367,7 @@ const OrdersPage: React.FC = () => {
       dataIndex: 'ticketCount',
       key: 'ticketCount',
       render: (count: number) => (
-        <Badge count={count} style={{ backgroundColor: '#52c41a' }} />
+        <Badge count={count} style={{ background: 'var(--color-success)' }} />
       ),
     },
     {
@@ -375,7 +375,7 @@ const OrdersPage: React.FC = () => {
       dataIndex: 'totalAmount',
       key: 'totalAmount',
       render: (amount: number) => (
-        <Text strong style={{ color: '#f50' }}>
+        <Text strong style={{ color: 'var(--color-price)' }}>
           NT$ {amount}
         </Text>
       ),
@@ -403,7 +403,7 @@ const OrdersPage: React.FC = () => {
             <Button
               type="primary"
               size="small"
-              style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+              style={{ background: 'var(--color-success)', borderColor: 'var(--color-success)' }}
               onClick={() => message.info('跳轉至付款頁面')}
             >
               付款
@@ -527,7 +527,7 @@ const OrdersPage: React.FC = () => {
                   {getStatusTag(selectedOrder.status)}
                 </Descriptions.Item>
                 <Descriptions.Item label="總金額" span={2}>
-                  <Text strong style={{ color: '#f50', fontSize: 16 }}>
+                  <Text strong style={{ color: 'var(--color-price)', fontSize: 16 }}>
                     NT$ {selectedOrder.totalAmount}
                   </Text>
                 </Descriptions.Item>
@@ -540,12 +540,8 @@ const OrdersPage: React.FC = () => {
                 key={ticket.ticketId}
                 className="mb-3"
                 style={{
-                  backgroundColor:
-                    selectedOrder.status === 'cancelled'
-                      ? '#f5f5f5'
-                      : selectedOrder.status === 'completed'
-                      ? '#f6ffed'
-                      : '#fff',
+                  background: 'var(--bg-subtle)',
+                  opacity: selectedOrder.status === 'cancelled' ? 0.6 : 1,
                 }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -599,7 +595,7 @@ const OrdersPage: React.FC = () => {
                       </>
                     }
                   >
-                    <Text strong style={{ color: '#f50' }}>
+                    <Text strong style={{ color: 'var(--color-price)' }}>
                       NT$ {ticket.price}
                     </Text>
                   </Descriptions.Item>

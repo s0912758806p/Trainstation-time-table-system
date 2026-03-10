@@ -1,39 +1,39 @@
 import { login } from '../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
-import { Input, Button, Form, Typography, message, Divider } from 'antd';
-import { UserOutlined, LockOutlined, TeamOutlined } from '@ant-design/icons';
+import { Input, Button, Form, message, Divider } from 'antd';
+import { UserOutlined, LockOutlined, RocketOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginApi, LoginRequestParams } from '../api/auth';
 import '../assets/styles/trainLoginPage.scss';
-
-const { Title } = Typography;
 
 interface LoginFormValues extends LoginRequestParams {
   remember?: boolean;
 }
 
+const FEATURES = [
+  '全台灣鐵路班次即時查詢',
+  '多條件篩選，精準找到您的列車',
+  '票務與訂單集中管理',
+  '支援訪客快速瀏覽，無需註冊',
+];
+
 const TrainLoginPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [guestLoading, setGuestLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
 
   const handleLogin = async (values: LoginFormValues) => {
     const { username, password } = values;
-
     if (!username || !password) {
-      message.error('請輸入用戶名和密碼');
+      message.error('請輸入帳號與密碼');
       return;
     }
 
     setLoading(true);
-
     try {
-      // 調用登入 API
       const response = await loginApi({ username, password });
-
-      // 成功後更新 Redux 狀態
       dispatch(
         login({
           ...response.user,
@@ -42,134 +42,155 @@ const TrainLoginPage: React.FC = () => {
           expiresIn: response.expiresIn,
         })
       );
-
+      navigate('/dashboard');
+      message.success('歡迎回來！');
+    } catch {
+      message.error('帳號或密碼錯誤，請再試一次');
+    } finally {
       setLoading(false);
-      navigate('/schedule');
-      message.success('登錄成功');
-    } catch (error) {
-      console.error('Login failed:', error);
-      setLoading(false);
-      message.error('登錄失敗，請檢查用戶名和密碼');
     }
   };
 
-  const handleGuestLogin = async () => {
+  const handleGuestLogin = () => {
     setGuestLoading(true);
-
-    try {
-      // 模擬訪客登入
-      setTimeout(() => {
-        // 創建訪客用戶對象
-        const guestUser = {
-          id: 'guest-' + Date.now(),
+    setTimeout(() => {
+      dispatch(
+        login({
           username: '訪客用戶',
-          name: '訪客',
-          email: '',
-          avatar: '',
           role: 'guest',
-          points: 0,
-          ticketCount: 0,
+          isGuest: true,
           token: 'guest-token-' + Math.random().toString(36).substring(2),
-          refreshToken: '',
           expiresIn: 3600,
-        };
-
-        // 更新 Redux 狀態
-        dispatch(login(guestUser));
-
-        setGuestLoading(false);
-        navigate('/schedule');
-        message.success('以訪客身份登入成功');
-      }, 500);
-    } catch (error) {
-      console.error('Guest login failed:', error);
+        })
+      );
       setGuestLoading(false);
-      message.error('訪客登入失敗，請稍後再試');
-    }
+      navigate('/dashboard');
+      message.success('已以訪客身份進入');
+    }, 500);
   };
 
   return (
-    <div className="login-page">
-      <Title level={2} style={{ textAlign: 'center' }}>
-        火車時刻表登錄
-      </Title>
-      <Form
-        name="login_form"
-        className="login-form"
-        initialValues={{ remember: true }}
-        onFinish={handleLogin}
-        style={{ maxWidth: 300, margin: '0 auto' }}
-      >
-        <Form.Item
-          name="username"
-          rules={[{ required: true, message: '請輸入用戶名' }]}
-        >
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="用戶名"
-            disabled={loading || guestLoading}
-          />
-        </Form.Item>
+    <div className="login-root">
+      {/* ── Left branding panel ── */}
+      <div className="login-left">
+        <div className="login-left-content">
+          <div className="login-brand-mark">
+            <div className="login-brand-icon">
+              <RocketOutlined style={{ color: '#fff' }} />
+            </div>
+            <span className="login-brand-name">台鐵查詢系統</span>
+          </div>
 
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: '請輸入密碼' }]}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="密碼"
-            disabled={loading || guestLoading}
-          />
-        </Form.Item>
+          <h1 className="login-headline">
+            輕鬆掌握<br />每一班列車
+          </h1>
+          <p className="login-subline">
+            整合時刻、票務、路線資訊，讓您的鐵路旅程規劃更簡單、更準確。
+          </p>
 
-        <Form.Item name="remember" valuePropName="checked">
-          <Form.Item name="remember" valuePropName="checked" noStyle>
-            <Button
-              type="link"
-              style={{ padding: 0 }}
-              disabled={loading || guestLoading}
+          <ul className="login-features" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {FEATURES.map((f) => (
+              <li key={f} className="login-feature-item">
+                <span className="login-feature-dot" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="login-right">
+        <div className="login-form-wrap">
+          <div className="login-form-header">
+            <h2 className="login-form-title">歡迎回來</h2>
+            <p className="login-form-subtitle">請輸入您的帳號資訊以繼續</p>
+          </div>
+
+          <Form
+            name="login"
+            layout="vertical"
+            onFinish={handleLogin}
+            requiredMark={false}
+          >
+            <Form.Item
+              name="username"
+              label="帳號"
+              rules={[{ required: true, message: '請輸入帳號' }]}
             >
-              記住我
-            </Button>
-          </Form.Item>
-          <Button
-            type="link"
-            style={{ float: 'right', padding: 0 }}
-            disabled={loading || guestLoading}
-          >
-            忘記密碼?
-          </Button>
-        </Form.Item>
+              <Input
+                prefix={<UserOutlined style={{ color: '#94a3b8' }} />}
+                placeholder="輸入您的帳號"
+                disabled={loading || guestLoading}
+                autoComplete="username"
+              />
+            </Form.Item>
 
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="login-form-button"
-            block
-            loading={loading}
-            disabled={guestLoading}
-          >
-            登錄
-          </Button>
-        </Form.Item>
+            <Form.Item
+              name="password"
+              label="密碼"
+              rules={[{ required: true, message: '請輸入密碼' }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined style={{ color: '#94a3b8' }} />}
+                placeholder="輸入您的密碼"
+                disabled={loading || guestLoading}
+                autoComplete="current-password"
+              />
+            </Form.Item>
 
-        <Divider>或</Divider>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginBottom: 20,
+                marginTop: -8,
+              }}
+            >
+              <Button
+                type="link"
+                style={{ padding: 0, fontSize: 13, color: '#6366f1', height: 'auto' }}
+              >
+                忘記密碼？
+              </Button>
+            </div>
 
-        <Form.Item>
-          <Button
-            type="default"
-            icon={<TeamOutlined />}
-            className="guest-login-button"
-            block
-            onClick={handleGuestLogin}
-            loading={guestLoading}
-            disabled={loading}
-          >
-            以訪客身份登入
-          </Button>
-        </Form.Item>
-      </Form>
+            <Form.Item style={{ marginBottom: 12 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="login-submit-btn"
+                block
+                loading={loading}
+                disabled={guestLoading}
+              >
+                登入
+              </Button>
+            </Form.Item>
+
+            <div className="login-divider">
+              <span>或</span>
+            </div>
+
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Button
+                className="login-guest-btn"
+                block
+                onClick={handleGuestLogin}
+                loading={guestLoading}
+                disabled={loading}
+              >
+                以訪客身份快速瀏覽
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <p className="login-footer-text">
+            還沒有帳號？{' '}
+            <Link to="/register">立即免費註冊</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

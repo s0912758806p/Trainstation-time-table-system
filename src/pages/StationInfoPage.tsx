@@ -511,9 +511,9 @@ const StationInfoPage: React.FC = () => {
       case 'restaurant':
         return <ShopOutlined style={{ color: '#fa8c16' }} />;
       case 'store':
-        return <ShopOutlined style={{ color: '#1890ff' }} />;
+        return <ShopOutlined style={{ color: 'var(--brand)' }} />;
       case 'attraction':
-        return <BankOutlined style={{ color: '#52c41a' }} />;
+        return <BankOutlined style={{ color: 'var(--color-success)' }} />;
       case 'hotel':
         return <BankOutlined style={{ color: '#722ed1' }} />;
       case 'transport':
@@ -563,11 +563,11 @@ const StationInfoPage: React.FC = () => {
   const getTransportIcon = (type: string) => {
     switch (type) {
       case 'bus':
-        return <CarOutlined style={{ color: '#1890ff' }} />;
+        return <CarOutlined style={{ color: 'var(--brand)' }} />;
       case 'mrt':
         return <CompassOutlined style={{ color: '#fa8c16' }} />;
       case 'bike':
-        return <CompassOutlined style={{ color: '#52c41a' }} />;
+        return <CompassOutlined style={{ color: 'var(--color-success)' }} />;
       case 'taxi':
         return <CarOutlined style={{ color: '#eb2f96' }} />;
       default:
@@ -995,7 +995,7 @@ const StationInfoPage: React.FC = () => {
                         <EnvironmentOutlined
                           style={{
                             fontSize: '36px',
-                            color: '#f5222d',
+                            color: 'var(--color-danger)',
                             marginBottom: '8px',
                           }}
                         />
@@ -1048,7 +1048,7 @@ const StationInfoPage: React.FC = () => {
                               <EnvironmentOutlined
                                 style={{
                                   fontSize: '24px',
-                                  color: '#f5222d',
+                                  color: 'var(--color-danger)',
                                   zIndex: 10,
                                   marginBottom: '8px',
                                 }}

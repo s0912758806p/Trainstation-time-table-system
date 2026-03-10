@@ -2,17 +2,324 @@
 @tailwind components;
 @tailwind utilities;
 
-// 導入全局樣式
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+// ─── Design Tokens ─────────────────────────────────────────────────────────
+:root {
+  // Brand
+  --brand:            #6366f1;
+  --brand-hover:      #4f46e5;
+  --brand-light:      rgba(99, 102, 241, 0.08);
+
+  // Page structure
+  --bg-page:          #f4f7fa;
+  --bg-surface:       #ffffff;
+  --bg-subtle:        #f8fafc;
+
+  // Sidebar (亮色系)
+  --sidebar-bg:           #ffffff;
+  --sidebar-border:       #e8edf2;
+  --sidebar-item:         #6b7280;
+  --sidebar-item-hover:   #111827;
+  --sidebar-item-hover-bg: #f4f6fa;
+  --sidebar-item-active:  #4f46e5;
+  --sidebar-item-active-bg: rgba(99, 102, 241, 0.08);
+  --sidebar-item-active-border: #6366f1;
+  --logo-text:            #111827;
+
+  // Header
+  --header-bg:     #ffffff;
+  --header-border: #f0f2f5;
+
+  // Text
+  --text-primary:   #111827;
+  --text-secondary: #4b5563;
+  --text-muted:     #9ca3af;
+  --text-inverse:   #f8fafc;
+
+  // Border
+  --border:        #e8edf2;
+  --border-subtle: #f0f2f5;
+
+  // Semantic
+  --color-success:  #22c55e;
+  --color-warning:  #f59e0b;
+  --color-danger:   #ef4444;
+  --color-price:    #f97316;
+
+  // Shadows
+  --shadow-xs: 0 1px 2px rgba(17, 24, 39, 0.04);
+  --shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.07), 0 1px 2px rgba(17, 24, 39, 0.04);
+  --shadow-md: 0 4px 8px rgba(17, 24, 39, 0.08), 0 2px 4px rgba(17, 24, 39, 0.04);
+  --shadow-lg: 0 12px 24px rgba(17, 24, 39, 0.10), 0 4px 8px rgba(17, 24, 39, 0.04);
+  --shadow-brand: 0 2px 8px rgba(99, 102, 241, 0.32);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-} 
+[data-theme='dark'] {
+  --brand:       #818cf8;
+  --brand-hover: #6366f1;
+  --brand-light: rgba(129, 140, 248, 0.12);
+  --shadow-brand: 0 2px 8px rgba(129, 140, 248, 0.28);
+
+  --bg-page:    #111c2b;
+  --bg-surface: #1e2d3d;
+  --bg-subtle:  #192535;
+
+  --sidebar-bg:            #152030;
+  --sidebar-border:        rgba(255, 255, 255, 0.07);
+  --sidebar-item:          #64748b;
+  --sidebar-item-hover:    #c4cdd9;
+  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.05);
+  --sidebar-item-active:   #818cf8;
+  --sidebar-item-active-bg: rgba(129, 140, 248, 0.13);
+  --sidebar-item-active-border: #818cf8;
+  --logo-text:             #e2e8f0;
+
+  --header-bg:     #1e2d3d;
+  --header-border: rgba(255, 255, 255, 0.07);
+
+  --text-primary:   #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted:     #4b5563;
+  --text-inverse:   #0f172a;
+
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+
+  --color-success:  #4ade80;
+  --color-warning:  #fbbf24;
+  --color-danger:   #f87171;
+  --color-price:    #fb923c;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.40), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.45), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadow-brand: 0 2px 8px rgba(129, 140, 248, 0.28);
+}
+
+// ─── Base Reset ────────────────────────────────────────────────────────────
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont,
+    'PingFang TC', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+// ─── Scrollbar ─────────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+  &:hover { background: var(--text-muted); }
+}
+
+// ─── Page loader ───────────────────────────────────────────────────────────
+.page-loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+}
+
+// ─── Ant Design — Layout ───────────────────────────────────────────────────
+.ant-layout {
+  background: var(--bg-page) !important;
+  transition: background 0.2s ease;
+}
+
+.ant-layout-content {
+  background: var(--bg-page) !important;
+}
+
+// ─── Ant Design — Sidebar ─────────────────────────────────────────────────
+.ant-layout-sider {
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--sidebar-border) !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+// ─── Ant Design — Menu (sidebar, light + dark unified via CSS vars) ────────
+.ant-menu,
+.ant-menu.ant-menu-inline,
+.ant-menu-light,
+.ant-menu-dark {
+  background: var(--sidebar-bg) !important;
+  border-inline-end: none !important;
+}
+
+.ant-menu-light .ant-menu-item,
+.ant-menu-dark .ant-menu-item {
+  color: var(--sidebar-item) !important;
+  border-radius: 8px !important;
+  margin: 2px 8px !important;
+  width: calc(100% - 16px) !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
+  font-size: 13.5px;
+
+  .anticon { font-size: 15px; }
+}
+
+.ant-menu-light .ant-menu-item:hover,
+.ant-menu-dark .ant-menu-item:hover {
+  background: var(--sidebar-item-hover-bg) !important;
+  color: var(--sidebar-item-hover) !important;
+}
+
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-dark .ant-menu-item-selected {
+  background: var(--sidebar-item-active-bg) !important;
+  color: var(--sidebar-item-active) !important;
+  font-weight: 600;
+
+  .anticon { color: var(--brand) !important; }
+
+  &::after { display: none !important; }
+}
+
+// ─── Ant Design — Card ─────────────────────────────────────────────────────
+.ant-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+
+  &:hover { box-shadow: var(--shadow-md) !important; }
+}
+
+.ant-card-head {
+  border-bottom: 1px solid var(--border-subtle) !important;
+  font-weight: 600 !important;
+}
+
+// ─── Ant Design — Button primary ───────────────────────────────────────────
+.ant-btn-primary {
+  background: var(--brand) !important;
+  border: none !important;
+  box-shadow: var(--shadow-brand) !important;
+  font-weight: 500 !important;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s !important;
+
+  &:hover {
+    background: var(--brand-hover) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  &:active { transform: translateY(0) !important; }
+}
+
+.ant-btn-default {
+  border-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+
+  &:hover {
+    border-color: var(--brand) !important;
+    color: var(--brand) !important;
+  }
+}
+
+// ─── Ant Design — Input / Select ───────────────────────────────────────────
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-picker,
+.ant-select-selector {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+
+  &:hover { border-color: #a5b4fc !important; }
+}
+
+.ant-input-affix-wrapper-focused,
+.ant-input:focus,
+.ant-picker-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px var(--brand-light) !important;
+  background: var(--bg-surface) !important;
+}
+
+// ─── Ant Design — Table ────────────────────────────────────────────────────
+.ant-table-wrapper {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--border-subtle) !important;
+  transition: background 0.15s ease;
+}
+
+// ─── Ant Design — Tag ──────────────────────────────────────────────────────
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  padding: 1px 8px !important;
+}
+
+// ─── Ant Design — Tabs ─────────────────────────────────────────────────────
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--brand) !important;
+  font-weight: 600 !important;
+}
+
+.ant-tabs-ink-bar { background: var(--brand) !important; }
+
+// ─── Ant Design — Collapse ─────────────────────────────────────────────────
+.ant-collapse {
+  background: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+}
+
+.ant-collapse-header { color: var(--text-primary) !important; }
+
+// ─── Ant Design — Descriptions ─────────────────────────────────────────────
+.ant-descriptions-item-label {
+  color: var(--text-muted) !important;
+  font-weight: 500 !important;
+}
+
+// ─── Utility classes ───────────────────────────────────────────────────────
+.text-price {
+  color: var(--color-price);
+  font-weight: 600;
+}
+
+.text-brand { color: var(--brand); }
+.text-muted  { color: var(--text-muted); }
+.text-primary-color { color: var(--text-primary); }
+
+.surface-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.gradient-text {
+  color: var(--brand);
+}
+
+.events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
