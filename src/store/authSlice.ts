@@ -23,8 +23,7 @@ const authSlice = createSlice({
         token?: string;
         refreshToken?: string;
         expiresIn?: number;
-        [key: string]: any;
-      }>
+      } & Partial<UserData>>
     ) => {
       const { username, token, refreshToken, expiresIn, ...userData } =
         action.payload;
@@ -104,7 +103,7 @@ const authSlice = createSlice({
     },
 
     // 更新用戶資料
-    updateUser: (state, action: PayloadAction<any>) => {
+    updateUser: (state, action: PayloadAction<Partial<UserData>>) => {
       if (state.user) {
         state.user = {
           ...state.user,

@@ -9,14 +9,11 @@ import { store } from '../store';
 import { logout, updateToken } from '../store/authSlice';
 import authStorage from '../utils/authStorage';
 
-// 強制使用模擬數據，無論環境
-export const USE_MOCK_API = true;
+// 透過環境變數控制；預設使用 mock（未設定時視為 true）
+export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK !== 'false';
 
-// 模擬API延遲 (300-800ms)
-const simulateNetworkDelay = (): Promise<void> => {
-  const delay = 300 + Math.random() * 500;
-  return new Promise((resolve) => setTimeout(resolve, delay));
-};
+export { simulateNetworkDelay } from '../utils/delay';
+import { simulateNetworkDelay } from '../utils/delay';
 
 // 創建 axios 實例用於一般 API 請求
 const apiClient: AxiosInstance = axios.create({
@@ -96,62 +93,22 @@ apiClient.interceptors.response.use(
 
 // API 請求輔助函數
 
-/**
- * 發送 GET 請求
- */
 export const fetchData = async <T>(url: string, params = {}): Promise<T> => {
-  try {
-    // 模擬網絡延遲
-    await simulateNetworkDelay();
-    const response: AxiosResponse<T> = await apiClient.get(url, { params });
-    return response.data;
-  } catch (error) {
-    console.error(`GET request failed for ${url}:`, error);
-    throw error;
-  }
+  const response: AxiosResponse<T> = await apiClient.get(url, { params });
+  return response.data;
 };
 
-/**
- * 發送 POST 請求
- */
 export const postData = async <T>(url: string, data = {}): Promise<T> => {
-  try {
-    // 模擬網絡延遲
-    await simulateNetworkDelay();
-    const response: AxiosResponse<T> = await apiClient.post(url, data);
-    return response.data;
-  } catch (error) {
-    console.error(`POST request failed for ${url}:`, error);
-    throw error;
-  }
+  const response: AxiosResponse<T> = await apiClient.post(url, data);
+  return response.data;
 };
 
-/**
- * 發送 PUT 請求
- */
 export const putData = async <T>(url: string, data = {}): Promise<T> => {
-  try {
-    // 模擬網絡延遲
-    await simulateNetworkDelay();
-    const response: AxiosResponse<T> = await apiClient.put(url, data);
-    return response.data;
-  } catch (error) {
-    console.error(`PUT request failed for ${url}:`, error);
-    throw error;
-  }
+  const response: AxiosResponse<T> = await apiClient.put(url, data);
+  return response.data;
 };
 
-/**
- * 發送 DELETE 請求
- */
 export const deleteData = async <T>(url: string): Promise<T> => {
-  try {
-    // 模擬網絡延遲
-    await simulateNetworkDelay();
-    const response: AxiosResponse<T> = await apiClient.delete(url);
-    return response.data;
-  } catch (error) {
-    console.error(`DELETE request failed for ${url}:`, error);
-    throw error;
-  }
+  const response: AxiosResponse<T> = await apiClient.delete(url);
+  return response.data;
 };

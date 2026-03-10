@@ -5,12 +5,7 @@ import {
   getMockTrainsByRoute,
   getMockTrainByNumber,
 } from './mockData';
-
-// 模擬網絡延遲 (300-800ms)
-const simulateNetworkDelay = (): Promise<void> => {
-  const delay = 300 + Math.random() * 500;
-  return new Promise((resolve) => setTimeout(resolve, delay));
-};
+import { simulateNetworkDelay } from '../utils/delay';
 
 // 模擬TDX API
 export const mockTdxApi = {

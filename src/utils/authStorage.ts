@@ -15,7 +15,11 @@ const AUTH_KEYS = {
 // 用戶數據類型
 export interface UserData {
   username: string;
-  [key: string]: any; // 其他可能的用戶資料欄位
+  email?: string;
+  displayName?: string;
+  role?: string;
+  permissions?: string[];
+  isGuest?: boolean;
 }
 
 // 存儲用戶認證狀態

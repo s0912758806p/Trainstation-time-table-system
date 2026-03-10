@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Button, Space, Drawer } from 'antd';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -20,67 +20,50 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { logout } from '../store/authSlice';
 import DateTime from './DateTime';
+import useIsMobile from '../hooks/useIsMobile';
 
 const { Header, Content, Sider } = Layout;
 
 const TrainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile();
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 監聽窗口大小變化
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (!mobile && mobileDrawerOpen) {
-        setMobileDrawerOpen(false);
-      }
-      // 在小屏幕上自動折疊側欄
-      if (mobile && !collapsed) {
-        setCollapsed(true);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize(); // 初始化時執行一次
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [collapsed, mobileDrawerOpen]);
-
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     dispatch(logout());
     navigate('/login');
-  };
+  }, [dispatch, navigate]);
 
-  const handleMenuClick = (path: string) => {
+  const handleMenuClick = useCallback((path: string) => {
     navigate(path);
     if (isMobile) {
       setMobileDrawerOpen(false);
     }
-  };
+  }, [isMobile, navigate]);
 
-  const userMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: '個人資料',
-      onClick: () => navigate('/profile'),
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: '登出',
-      onClick: handleLogout,
-    },
-  ];
+  const userMenuItems = useMemo(
+    () => [
+      {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: '個人資料',
+        onClick: () => navigate('/profile'),
+      },
+      {
+        key: 'logout',
+        icon: <LogoutOutlined />,
+        label: '登出',
+        onClick: handleLogout,
+      },
+    ],
+    [handleLogout, navigate]
+  );
 
-  // 保持與原始設計一致的導航項目格式
-  const navigationItems = [
+  const navigationItems = useMemo(() => [
     {
       key: '/dashboard',
       icon: <HomeOutlined />,
@@ -129,7 +112,7 @@ const TrainLayout: React.FC = () => {
       label: isMobile ? '幫助中心' : <Link to="/faq">幫助中心</Link>,
       onClick: isMobile ? () => handleMenuClick('/faq') : undefined,
     },
-  ];
+  ], [isMobile, handleMenuClick]);
 
   // 移動端抽屜菜單
   const mobileMenu = (
