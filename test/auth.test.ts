@@ -42,3 +42,29 @@ describe('parseSession', () => {
     expect(parseSession(JSON.stringify({ email: 'x' }))).toBeNull();
   });
 });
+
+describe('safeNext (open-redirect guard)', async () => {
+  const { safeNext } = await import('@/lib/safeNext');
+
+  it.each([
+    ['/orders', '/orders'],
+    ['/booking?train=101&date=2026-11-24', '/booking?train=101&date=2026-11-24'],
+    ['/help#refund', '/help#refund'],
+  ])('keeps same-site path %s', (input, out) => {
+    expect(safeNext(input)).toBe(out);
+  });
+
+  it.each([
+    'https://evil.example',
+    '//evil.example',
+    '/\\evil.example',
+    '/\\/evil.example',
+    '/%0a/evil.example'.replace('%0a', '\n'),
+    'javascript:alert(1)',
+    '',
+    undefined,
+    null,
+  ])('falls back to / for %j', (input) => {
+    expect(safeNext(input as string | undefined)).toBe('/');
+  });
+});

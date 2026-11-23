@@ -15,6 +15,14 @@ test.describe('登入保護', () => {
     await expect(page).toHaveURL(/\/login\?next=%2Forders/);
   });
 
+  test('登入後不會被導向外部網站（open redirect）', async ({ page }) => {
+    await page.goto('/login?next=' + encodeURIComponent('/\\evil.example'));
+    await page.getByLabel('電子郵件').fill('rider@example.com');
+    await page.getByLabel('密碼').fill('password123');
+    await page.getByRole('button', { name: '登入', exact: true }).click();
+    await expect(page).toHaveURL('/');
+  });
+
   test('登入表單驗證', async ({ page }) => {
     await page.goto('/login');
     const form = page.locator('form'); // Next 的 route announcer 也是 role=alert，需限定在表單內
