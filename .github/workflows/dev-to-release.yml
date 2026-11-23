@@ -1,4 +1,5 @@
-# dev 有新提交時，自動開 dev → release 的 PR 並立即合併。
+# dev 有新提交時，先跑 CI（呼叫 ci.yml：lint、型別檢查、測試、建置），全部通過才
+# 自動開 dev → release 的 PR 並立即合併；CI 失敗時不會合併。
 # 使用內建 GITHUB_TOKEN（不會過期）。release 沒有分支保護、儲存庫也未開啟 auto-merge，
 # 所以直接合併；若日後加上必要檢查，改成 `gh pr merge --auto`。
 # 注意：Vercel 正式環境部署自 main，release → main 仍需手動合併。
@@ -18,7 +19,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   create-and-merge-pr:
+    needs: verify
     if: ${{ !contains(github.event.head_commit.message, '[skip-release]') }}
     runs-on: ubuntu-latest
     steps:

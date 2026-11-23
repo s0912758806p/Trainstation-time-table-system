@@ -107,7 +107,7 @@ export function mapTrain(t: TdxTimetable): Train {
   return {
     no: info.TrainNo,
     type: trainTypeFromName(typeName),
-    typeName: typeName.replace(/\(.*?型.*?\)/g, ''),
+    typeName: typeName.replace(/\([^()]*型[^()]*\)/g, ''),
     originName: norm(info.StartingStationName?.Zh_tw),
     destName: norm(info.EndingStationName?.Zh_tw),
     line: '',
