@@ -38,7 +38,7 @@ cp .env.example .env.local   # optional: add TDX keys
 npm run dev                  # http://localhost:3000
 ```
 
-Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`.
+Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:watch`.
 
 ### Environment variables
 
@@ -51,6 +51,42 @@ Apply for keys at [TDX 運輸資料流通服務](https://tdx.transportdata.tw/).
 
 `vercel.json` pins the framework to Next.js so an older *Vite* preset in the Vercel dashboard can't override the build output.
 
+## Testing
+
+```bash
+npm test             # Vitest, run once
+npm run test:watch   # re-run on change
+```
+
+Unit tests live in `test/` and need no TDX keys or browser:
+
+- **Data fallback** (`test/data-fallback.test.ts`): TDX failures, empty lists, malformed records and missing trains fall back to mock data. A missing fare is filled in with a distance estimate.
+- **TDX client and mappers**: token caching, `USE_MOCK`, HTTP errors, midnight-crossing timetables, fare picking.
+- **Mock timetable**: determinism, search order, fares, and board directions (regression for PR #5).
+- **Orders store**: id sequence, 30-minute pay window, expiry, refund/cancel, unavailable `localStorage`.
+- **Auth**: the `proxy.ts` route guard and session parsing.
+- **Docs freshness** (`test/docs-freshness.test.ts`): this README's scripts, environment variables, Node version and workflow list must match `package.json`, `.env.example`, the code and `.github/workflows/`. Update the README in the same change, or the test fails.
+
+## Branching & Deployment
+
+```
+feature branch ──(Auto Pull Request)──▶ PR to dev ──(manual merge)──▶ dev
+dev ──(Dev to Release: auto PR + merge)──▶ release   → Vercel Preview
+release ──(manual PR + merge)──▶ main                → Vercel Production
+```
+
+Workflows in `.github/workflows/`:
+
+| File | Runs on | What it does |
+|---|---|---|
+| `ci.yml` | push to any branch except `dev`, fork PRs, manual | lint, typecheck, `npm test`, `npm run build` (mock data, no keys needed) |
+| `auto-pull-request.yml` | push to a feature branch | opens the PR to `dev` if none exists |
+| `dev-to-release.yml` | push to `dev`, manual | runs `ci.yml` first; only if it passes, opens and merges the `dev` → `release` PR |
+
+- All workflows use the built-in `GITHUB_TOKEN`, so no personal access token is needed. Requirement: *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests* must be enabled.
+- PRs and merges made with `GITHUB_TOKEN` don't trigger other workflows; Vercel deploys through its GitHub app, so it is unaffected.
+- Add `[skip-release]` to a commit message on `dev` to skip the automatic release merge. The release workflow can also be run manually (*Actions → Dev to Release → Run workflow*).
+
 ## Data Flow
 
 ```
@@ -62,7 +98,9 @@ Server Components / Server Actions
         └──────────────────────────────────────▶ lib/mock (deterministic timetable)
 ```
 
-- Every data function returns `{ data, source }`; failures are logged (`[data] … 改用模擬資料`) and fall back to mock data, so pages never break.
+- Every data function returns `{ data, source }`. **Whatever TDX can't provide comes from mock data**, so pages never break:
+  - The whole record falls back (`source: 'mock'`, logged as `[data] … 改用模擬資料`) when TDX errors, returns an empty list or malformed records, or doesn't have the requested train, trip or station.
+  - Single missing fields are filled in while `source` stays `'tdx'`: a missing fare is estimated from mock-network distance, and seat availability (which TDX doesn't publish) always uses the mock value.
 - TDX endpoint paths live in `lib/tdx/client.ts` (`TDX_PATHS`). The token endpoint is verified; the timetable, fare and live-board paths follow the TDX v3 Rail/TRA docs and should be checked against the TDX Swagger once you have keys. Fare mapping (`pickFare`) is a heuristic until then.
 - Mock timetables are deterministic: the same train number always has the same type and stops; seat availability and delays are seeded by train number + date.
 - Orders, recent searches, favourites and read notices are stored in the browser's `localStorage` (`lib/stores`). The session is a `ts_session` cookie set by Server Actions in `app/actions/session.ts`.
@@ -89,8 +127,10 @@ lib/
   tdx/               TDX client and response mappers
   mock/              mock network (stations, lines, service templates) and timetable generator
   stores/            localStorage-backed client stores (orders, prefs)
+  board.ts           departure-board helpers (direction labels)
   format.ts, trainTypes.ts, types.ts, faq.ts, notices.ts, stationInfo.ts
 proxy.ts             protects /booking, /orders, /account
+test/                Vitest unit tests (see Testing)
 ```
 
 ## License

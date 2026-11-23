@@ -1,0 +1,39 @@
+# 每次推送都跑 lint、型別檢查、單元測試與正式建置（不需要 TDX 金鑰，建置時使用模擬資料）。
+# - dev 不在這裡跑：dev-to-release.yml 會先呼叫本 workflow（workflow_call），通過才合併到 release，
+#   避免同一個提交跑兩次。
+# - pull_request 只處理來自 fork 的 PR；同一個 repo 的分支已由 push 觸發，結果會顯示在 PR 上。
+# - 用 GITHUB_TOKEN 建立的 PR／合併不會觸發其他 workflow，所以 release 的自動合併不會再跑一次。
+name: CI
+on:
+  push:
+    branches-ignore:
+      - dev
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

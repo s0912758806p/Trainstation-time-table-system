@@ -4,7 +4,7 @@
  */
 import { hash, minToTime } from '../format';
 import { TRAIN_TYPES } from '../trainTypes';
-import type { BoardEntry, SeatStatus, StopTime, Train, Trip } from '../types';
+import type { BoardEntry, SeatStatus, StopTime, Train, TrainTypeKey, Trip } from '../types';
 import { LINES, RUN, SERVICES, STATION_BY_ID, type Line, type ServiceTemplate } from './network';
 
 interface Generated {
@@ -77,7 +77,8 @@ function allTrains(): Generated[] {
   return cache;
 }
 
-function seatFor(train: Train, date: string, fromId: string): SeatStatus {
+/** 座位狀態依「車次＋日期＋上車站」雜湊；TDX 不提供座位餘額，真實資料也沿用這個模擬值 */
+export function mockSeat(train: Train, date: string, fromId: string): SeatStatus {
   if (!TRAIN_TYPES[train.type].reservable) return 'free';
   const r = hash(`${train.no}|${date}|${fromId}`) % 10;
   if (r === 0) return 'none';
@@ -85,9 +86,23 @@ function seatFor(train: Train, date: string, fromId: string): SeatStatus {
   return 'ok';
 }
 
+const fareByKm = (type: TrainTypeKey, km: number) => Math.max(15, Math.round(km * TRAIN_TYPES[type].farePerKm));
+
 function fareFor(g: Generated, fromId: string, toId: string): number {
-  const dist = Math.abs((g.km.get(toId) ?? 0) - (g.km.get(fromId) ?? 0));
-  return Math.max(15, Math.round(dist * TRAIN_TYPES[g.train.type].farePerKm));
+  return fareByKm(g.train.type, Math.abs((g.km.get(toId) ?? 0) - (g.km.get(fromId) ?? 0)));
+}
+
+/**
+ * 依模擬路網里程估算全票票價，用於 TDX 查不到票價時補值。
+ * 起訖站不在同一條模擬路線上時回傳 null（頁面會顯示「—」並停止訂票）。
+ */
+export function estimateFare(type: TrainTypeKey, fromId: string, toId: string): number | null {
+  for (const line of LINES) {
+    const a = line.stations.find((s) => s.id === fromId);
+    const b = line.stations.find((s) => s.id === toId);
+    if (a && b && a !== b) return fareByKm(type, Math.abs(b.km - a.km));
+  }
+  return null;
 }
 
 function toTrip(g: Generated, date: string, fromId: string, toId: string): Trip | null {
@@ -103,7 +118,7 @@ function toTrip(g: Generated, date: string, fromId: string, toId: string): Trip 
     durationMin: stops[b].arrMin - stops[a].depMin,
     stopsBetween: b - a - 1,
     fare: fareFor(g, fromId, toId),
-    seat: seatFor(g.train, date, fromId),
+    seat: mockSeat(g.train, date, fromId),
   };
 }
 
