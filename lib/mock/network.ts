@@ -47,14 +47,20 @@ export const STATION_BY_ID = new Map(STATIONS.map((s) => [s.id, s]));
 export interface Line {
   id: 'west' | 'east';
   name: string;
-  /** 依順行方向排列的站碼與里程（公里） */
+  /** 依站序排列的站碼與里程（公里） */
   stations: { id: string; km: number }[];
+  /**
+   * 站序遞增時的行駛方向。環島同向需一致：西部幹線往南（臺北→高雄）與
+   * 東部幹線往臺北（花蓮→臺北）是同一個繞行方向，因此東部幹線由臺北出發為 1。
+   */
+  ascendingDirection: 0 | 1;
 }
 
 export const LINES: Line[] = [
   {
     id: 'west',
     name: '西部幹線',
+    ascendingDirection: 0,
     stations: [
       ['0900', 0], ['0930', 7.6], ['0980', 21.4], ['0990', 23.9], ['1000', 28.3], ['1020', 35.5],
       ['1080', 57.1], ['1100', 67.0], ['1210', 106.4], ['3160', 147.0], ['3230', 182.0], ['3300', 193.5],
@@ -64,6 +70,7 @@ export const LINES: Line[] = [
   {
     id: 'east',
     name: '東部幹線',
+    ascendingDirection: 1,
     stations: [
       ['1000', 0], ['0990', 4.4], ['0980', 6.9], ['0930', 20.7], ['7190', 96.0], ['7160', 103.0],
       ['7000', 194.0], ['6110', 280.0], ['6000', 345.0],
