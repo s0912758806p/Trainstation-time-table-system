@@ -23,11 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
-.env
-.env.local
-.env.development
-.env.production
+# Environment variables：所有 .env 檔（含 .env.*.local 與 .env/ 資料夾）都不提交，只保留範本
+.env*
+!.env.example
 
 # API Keys
 *.pem
@@ -48,3 +46,7 @@ out
 next-env.d.ts
 *.tsbuildinfo
 .vercel
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

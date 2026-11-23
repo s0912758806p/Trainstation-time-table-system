@@ -6,8 +6,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SESSION_COOKIE } from '@/lib/constants';
-
-const safeNext = (next: string) => (next.startsWith('/') && !next.startsWith('//') ? next : '/');
+import { safeNext } from '@/lib/safeNext';
 
 export async function signIn(input: { name?: string; email?: string; guest?: boolean; next?: string }): Promise<{ error: string } | void> {
   const guest = !!input.guest;
@@ -23,7 +22,7 @@ export async function signIn(input: { name?: string; email?: string; guest?: boo
     maxAge: 60 * 60 * 24 * 30,
   });
   // 訪客不能進入受保護頁，避免被 proxy 導回登入頁形成迴圈
-  const next = safeNext(input.next ?? '/');
+  const next = safeNext(input.next);
   redirect(guest && /^\/(booking|orders|account)/.test(next) ? '/' : next);
 }
 
