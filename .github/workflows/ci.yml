@@ -2,14 +2,14 @@
 # （不需要 TDX 金鑰，一律使用模擬資料）。E2E 失敗時會上傳 playwright-report 供下載檢視。
 # - dev 不在這裡跑：dev-to-release.yml 會先呼叫本 workflow（workflow_call），通過才合併到 release，
 #   避免同一個提交跑兩次。
-# - pull_request 只處理來自 fork 的 PR；同一個 repo 的分支已由 push 觸發，結果會顯示在 PR 上。
-# - 用 GITHUB_TOKEN 建立的 PR／合併不會觸發其他 workflow，所以 release 的自動合併不會再跑一次。
+# - 不使用 pull_request 觸發：同一個 repo 的分支已由 push 觸發，結果會顯示在 PR 上；而機器人
+#   （GITHUB_TOKEN）開的 PR 觸發的執行會卡在「等待核准」，只會留下雜訊。代價是 fork 來的 PR 不會自動跑 CI。
+# - 用 GITHUB_TOKEN 完成的合併不會觸發 push，所以 release 的自動合併不會再跑一次。
 name: CI
 on:
   push:
     branches-ignore:
       - dev
-  pull_request:
   workflow_call:
   workflow_dispatch:
 
@@ -22,7 +22,6 @@ concurrency:
 
 jobs:
   verify:
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
