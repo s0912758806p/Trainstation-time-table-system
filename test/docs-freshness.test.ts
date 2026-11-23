@@ -69,7 +69,7 @@ describe('README stays in sync with the code', () => {
   });
 
   it('every test file it names exists', () => {
-    const named = [...README.matchAll(/`(test\/[\w./-]+\.ts)`/g)].map((m) => m[1]);
+    const named = [...README.matchAll(/`((?:test|e2e)\/[\w./-]+\.ts)`/g)].map((m) => m[1]);
     expect(named.length).toBeGreaterThan(0);
     for (const f of named) expect(existsSync(join(ROOT, f)), f).toBe(true);
   });
