@@ -106,11 +106,11 @@ export default async function TrainPage({ params, searchParams }: { params: Para
               const dwell = s.depMin - s.arrMin;
               return (
                 <li key={s.stationId} className={cls(i)}>
-                  <span className="rt" style={i === iFrom || i === iTo ? { color: 'var(--accent)' } : undefined}>{isLast ? s.arr : s.dep}</span>
+                  <span className="rt" style={i === iFrom || i === iTo ? { color: 'var(--accent)' } : undefined}>{isLast || i === iTo ? s.arr : s.dep}</span>
                   <span className="rail"><span className="dot" /></span>
                   <div>
                     <Link href={`/stations/${s.stationId}`} className="rn text-inherit no-underline hover:underline" style={{ color: 'inherit', fontSize: i === iFrom || i === iTo ? 17 : undefined }}>{s.stationName}</Link>
-                    <p className="rm">{isFirst ? '始發站' : isLast ? '終點站' : `停 ${dwell} 分・到站 ${s.arr}`}</p>
+                    <p className="rm">{isFirst ? '始發站' : isLast ? '終點站' : i === iTo ? `停 ${dwell} 分・${s.dep} 開` : `停 ${dwell} 分・到站 ${s.arr}`}</p>
                   </div>
                   {i === iFrom ? <span className="pill pill-accent">上車</span> : i === iTo ? <span className="pill pill-accent">下車</span> : <span />}
                 </li>

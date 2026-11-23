@@ -52,7 +52,7 @@ function buildTrain(t: ServiceTemplate, index: number): Generated {
   return {
     line,
     km,
-    direction: step === 1 ? 0 : 1,
+    direction: step === 1 ? line.ascendingDirection : ((1 - line.ascendingDirection) as 0 | 1),
     train: {
       no,
       type: t.type,
