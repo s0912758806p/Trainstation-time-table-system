@@ -50,7 +50,7 @@ export default async function StationPage({ params }: { params: Params }) {
           </section>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <DepartureBoard stationName={station.name} entries={board} updatedAt={minToTime(nowMinTW())} date={today} rows={5} directionLabels={['順行', '逆行']} />
+            <DepartureBoard stationName={station.name} entries={board} updatedAt={minToTime(nowMinTW())} date={today} rows={5} />
             <section className="card px-5 py-5 sm:px-6">
               <h3 className="h-sec mb-1">轉乘交通</h3>
               <ul>

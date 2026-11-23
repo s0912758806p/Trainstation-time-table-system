@@ -68,7 +68,10 @@ export interface BoardEntry {
   destName: string;
   platform: string;
   delayMin: number;
-  /** 0 = 順行（南下／往東部），1 = 逆行（北上） */
+  /**
+   * 行駛方向，沿用 TDX 的順行（0）／逆行（1）。環島路網上同一個值代表同一個繞行方向，
+   * 因此在同一個車站裡可用來分出兩側月台；看板標籤由終點站推導，不寫死「南下／北上」。
+   */
   direction: 0 | 1;
 }
 
