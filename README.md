@@ -1,107 +1,97 @@
-# Trainstation Time Table System
+# Trainstation Time Table System（台鐵時刻）
 
-A comprehensive Taiwan Railway train schedule inquiry system using simulated data, providing complete train information with an intuitive query interface.
+A Taiwan Railway (TRA) timetable and booking demo built with **Next.js 16 (App Router)**.
+Search trains between stations, inspect a train's stops on a route timeline, book seats, and manage orders — on desktop and mobile, in light or dark mode.
 
-![Trainstation Time Tabel System](./src//assets/Screenshot-trainstation.png)
 **Demo:** [Live Demo](https://trainstation-time-table-gr925.vercel.app)
+**Design:** the UI follows the Claude Design canvas *台鐵時刻 · Redesign* (railway identity: navy board, signal-orange accent, departure-board results, route-line timeline).
+
+> This is a portfolio project, not an official TRA service. Timetables come from the TDX open-data API when keys are configured and fall back to deterministic mock data otherwise. Accounts, bookings and payments are always simulated.
 
 ## Features
 
-- Query train schedules for specific dates
-- Search for specific trains by train number
-- Query trains by departure and arrival stations
-- View ticket and reservation information
-- User order management system
-- Member center and personal data management
-- Comprehensive FAQ and help center
-- User authentication and authorization
-- Fixed sidebar navigation for enhanced user experience
-- Fully responsive design supporting various devices
-- Using simulated data, no external API connection required
+- **Timetable search** by origin/destination (with swap, date strip, departure-time filter) or by train number
+- **Results** with train-type / time-of-day / service filters and sort by departure, duration or fare
+- **Train detail** with a stop timeline that highlights your segment, fares per ticket type
+- **Booking flow**: passengers per ticket type, seat preference, contact → order with a 30-minute payment window
+- **My orders**: status tabs (待付款 / 已付款 / 已完成 / 已退款 / 已取消), search, pay, cancel, refund, print
+- **Stations**: searchable list by region, live departures board, transfers and facilities
+- **Help center**: categorized FAQ with full-text search (questions and answers)
+- **Mock auth**: member login / register / guest mode; booking and orders require a member session
+- Light / dark themes (no flash on load), responsive layout with a mobile bottom tab bar, keyboard and screen-reader friendly controls
 
 ## Tech Stack
 
-- React 18.3
-- TypeScript 5.0
-- Vite 6.0
-- Redux Toolkit - State management
-- Ant Design 5.24 - UI component library
-- Axios - Request handling
-- React Router v7 - Routing management
-- Tailwind CSS - Styling
-- DayJS - Date and time handling
+- Next.js 16 (App Router, Server Components, Server Actions, `proxy.ts` route guard)
+- React 19, TypeScript (strict)
+- Tailwind CSS 4 with design tokens as CSS variables (`app/globals.css`)
+- Radix UI (Dialog, Popover) for accessible overlays
+- TDX (Transport Data eXchange) API, server-side only
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-
-### Development & Build
+Requires Node.js 20.9+.
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview build result
-npm run preview
+cp .env.example .env.local   # optional: add TDX keys
+npm run dev                  # http://localhost:3000
 ```
+
+Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`.
+
+### Environment variables
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `TDX_CLIENT_ID` / `TDX_CLIENT_SECRET` | server only | TDX OAuth client credentials. Leave empty to use mock data. **Never prefix with `NEXT_PUBLIC_`.** |
+| `USE_MOCK` | server only | `true` forces mock data even when keys are set. |
+
+Apply for keys at [TDX 運輸資料流通服務](https://tdx.transportdata.tw/). On Vercel, add them under *Project → Settings → Environment Variables*.
+
+`vercel.json` pins the framework to Next.js so an older *Vite* preset in the Vercel dashboard can't override the build output.
+
+## Data Flow
+
+```
+Server Components / Server Actions
+        │
+   lib/data/index.ts  ── TDX configured? ──yes──▶ lib/tdx (token cache + fetch, revalidate 30s–1d)
+        │                     │                         │ any error
+        │                     no                        ▼
+        └──────────────────────────────────────▶ lib/mock (deterministic timetable)
+```
+
+- Every data function returns `{ data, source }`; failures are logged (`[data] … 改用模擬資料`) and fall back to mock data, so pages never break.
+- TDX endpoint paths live in `lib/tdx/client.ts` (`TDX_PATHS`). The token endpoint is verified; the timetable, fare and live-board paths follow the TDX v3 Rail/TRA docs and should be checked against the TDX Swagger once you have keys. Fare mapping (`pickFare`) is a heuristic until then.
+- Mock timetables are deterministic: the same train number always has the same type and stops; seat availability and delays are seeded by train number + date.
+- Orders, recent searches, favourites and read notices are stored in the browser's `localStorage` (`lib/stores`). The session is a `ts_session` cookie set by Server Actions in `app/actions/session.ts`.
 
 ## Project Structure
 
 ```
-src/
-├── api/                # API services and mock data processing
-├── assets/             # Static resources
-├── components/         # Reusable components
-├── pages/              # Application pages
-├── routes/             # Route configuration
-├── store/              # Redux state management
-└── utils/              # Utility functions
+app/
+  (site)/            pages with the top bar + mobile tab bar
+    page.tsx         home: search, departures board, next trip, favourites, notices
+    search/          results for ?from&to&date&after
+    trains/[no]/     train detail (?date&from&to)
+    booking/         booking form; booking/done/[id] confirmation
+    orders/          my orders
+    stations/[id]/   station info
+    help/            help center
+    account/         member center
+  login/             login / register / guest
+  actions/session.ts mock sign-in / sign-out (Server Actions)
+  globals.css        design tokens (light/dark) + component classes
+components/          TopBar, SiteChrome, SearchForm, StationPicker, ResultsList, DepartureBoard, BookingForm, OrdersView, …
+lib/
+  data/              data access facade (TDX → mock fallback)
+  tdx/               TDX client and response mappers
+  mock/              mock network (stations, lines, service templates) and timetable generator
+  stores/            localStorage-backed client stores (orders, prefs)
+  format.ts, trainTypes.ts, types.ts, faq.ts, notices.ts, stationInfo.ts
+proxy.ts             protects /booking, /orders, /account
 ```
-
-## Mock Data Mechanism
-
-This project uses a complete mock data mechanism without the need to connect to external APIs:
-
-- Mock API interfaces that simulate network request delays
-- Provides mock data for stations, train schedules, and other basic data
-- Generates detailed train operation information including schedules and stations
-- Handles simulated requests without actual API connections
-- Provides simulated user authentication mechanisms
-
-### Features
-
-- Completely offline operation, independent of external services
-- Simulates network delays for realistic user experience
-- Provides rich mock data covering actual application scenarios
-- Unified error handling and simulated API responses
-
-### Usage Example
-
-```typescript
-// Import API functions
-import { getAllStations, getTrainByNumber } from "../api/train";
-import { loginApi } from "../api/auth";
-
-// Use API (actually using mock data)
-const stations = await getAllStations();
-const trainDetails = await getTrainByNumber("123", "2023-04-01");
-```
-
-## UI Features
-
-- **Fixed Sidebar**: Sidebar remains fixed during page scrolling, enhancing navigation experience
-- **Responsive Design**: Adapts to different screen sizes, from mobile to desktop devices
-- **Modern Interface**: Uses Ant Design and Tailwind CSS to provide a clear and attractive interface
-- **Intuitive Operation**: Concise forms and data display methods that enhance user-friendliness
 
 ## License
 
