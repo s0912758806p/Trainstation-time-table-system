@@ -49,6 +49,8 @@ Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`
 
 Apply for keys at [TDX 運輸資料流通服務](https://tdx.transportdata.tw/). On Vercel, add them under *Project → Settings → Environment Variables*.
 
+`vercel.json` pins the framework to Next.js so an older *Vite* preset in the Vercel dashboard can't override the build output.
+
 ## Data Flow
 
 ```
