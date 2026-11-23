@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { safeNext } from '@/lib/safeNext';
 import { TrainIcon } from '@/components/icons';
 import { LoginForm } from '@/components/LoginForm';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -10,7 +11,7 @@ const ROUTE = [['07:20', '臺北', true], ['08:22', '新竹', false], ['09:12', 
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; tab?: string }> }) {
   const sp = await searchParams;
-  const next = sp.next?.startsWith('/') && !sp.next.startsWith('//') ? sp.next : '/';
+  const next = safeNext(sp.next);
 
   return (
     <div className="grid min-h-dvh md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
