@@ -1,4 +1,5 @@
-# 每次推送都跑 lint、型別檢查、單元測試與正式建置（不需要 TDX 金鑰，建置時使用模擬資料）。
+# 每次推送都跑 lint、型別檢查、單元測試、正式建置與 Playwright 端對端測試
+# （不需要 TDX 金鑰，一律使用模擬資料）。E2E 失敗時會上傳 playwright-report 供下載檢視。
 # - dev 不在這裡跑：dev-to-release.yml 會先呼叫本 workflow（workflow_call），通過才合併到 release，
 #   避免同一個提交跑兩次。
 # - pull_request 只處理來自 fork 的 PR；同一個 repo 的分支已由 push 觸發，結果會顯示在 PR 上。
@@ -23,7 +24,7 @@ jobs:
   verify:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -37,3 +38,17 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

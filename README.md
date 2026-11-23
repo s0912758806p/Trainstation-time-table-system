@@ -38,7 +38,7 @@ cp .env.example .env.local   # optional: add TDX keys
 npm run dev                  # http://localhost:3000
 ```
 
-Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:watch`.
+Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:watch`, `npm run test:e2e`.
 
 ### Environment variables
 
@@ -67,6 +67,22 @@ Unit tests live in `test/` and need no TDX keys or browser:
 - **Auth**: the `proxy.ts` route guard and session parsing.
 - **Docs freshness** (`test/docs-freshness.test.ts`): this README's scripts, environment variables, Node version and workflow list must match `package.json`, `.env.example`, the code and `.github/workflows/`. Update the README in the same change, or the test fails.
 
+### End-to-end tests (Playwright)
+
+```bash
+npx playwright install chromium   # first time only
+npm run test:e2e                  # builds, starts on :3100 with USE_MOCK=true, runs Chromium
+```
+
+Specs live in `e2e/` and drive a real browser against the production build, in the Asia/Taipei time zone:
+
+- **Search** (`e2e/search.spec.ts`): station picker (including 台→臺), swap, same-station error, quick dates, search by train number, results → train detail.
+- **Booking** (`e2e/booking.spec.ts`): signed out → login → back to booking → add passenger → book → pay → my orders (survives reload) → refund. Also form validation and cancelling a pending order.
+- **Site** (`e2e/site.spec.ts`): route guard and guest mode (no redirect loop), login validation, dark mode persisting across reload, station board, help search, 404 pages.
+- **Mobile** (`e2e/layout.mobile.spec.ts`, Pixel 7): no horizontal scroll on key pages; bottom tab bar navigation.
+
+`/trains/<invalid>` shows the 404 page with status 200 plus a `noindex` tag, because `(site)/loading.tsx` streams the page before `notFound()` runs. This is standard Next.js behaviour, and the spec checks for it. On CI failures, download the `playwright-report` artifact from the run.
+
 ## Branching & Deployment
 
 ```
@@ -79,7 +95,7 @@ Workflows in `.github/workflows/`:
 
 | File | Runs on | What it does |
 |---|---|---|
-| `ci.yml` | push to any branch except `dev`, fork PRs, manual | lint, typecheck, `npm test`, `npm run build` (mock data, no keys needed) |
+| `ci.yml` | push to any branch except `dev`, fork PRs, manual | lint, typecheck, `npm test`, `npm run build`, `npm run test:e2e` (mock data, no keys needed) |
 | `auto-pull-request.yml` | push to a feature branch | opens the PR to `dev` if none exists |
 | `dev-to-release.yml` | push to `dev`, manual | runs `ci.yml` first; only if it passes, opens and merges the `dev` → `release` PR |
 
@@ -131,6 +147,7 @@ lib/
   format.ts, trainTypes.ts, types.ts, faq.ts, notices.ts, stationInfo.ts
 proxy.ts             protects /booking, /orders, /account
 test/                Vitest unit tests (see Testing)
+e2e/                 Playwright end-to-end specs
 ```
 
 ## License
