@@ -95,12 +95,13 @@ Workflows in `.github/workflows/`:
 
 | File | Runs on | What it does |
 |---|---|---|
-| `ci.yml` | push to any branch except `dev`, fork PRs, manual | lint, typecheck, `npm test`, `npm run build`, `npm run test:e2e` (mock data, no keys needed) |
+| `ci.yml` | push to any branch except `dev`, manual | lint, typecheck, `npm test`, `npm run build`, `npm run test:e2e` (mock data, no keys needed) |
 | `auto-pull-request.yml` | push to a feature branch | opens the PR to `dev` if none exists |
 | `dev-to-release.yml` | push to `dev`, manual | runs `ci.yml` first; only if it passes, opens and merges the `dev` → `release` PR |
 
 - All workflows use the built-in `GITHUB_TOKEN`, so no personal access token is needed. Requirement: *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests* must be enabled.
-- PRs and merges made with `GITHUB_TOKEN` don't trigger other workflows; Vercel deploys through its GitHub app, so it is unaffected.
+- Merges pushed with `GITHUB_TOKEN` don't trigger `push` workflows, so the automatic `release` merge doesn't re-run CI. Vercel deploys through its GitHub app, so it is unaffected.
+- `ci.yml` has no `pull_request` trigger. Same-repo branches are already checked on push, and the result shows on the PR. PRs opened by the bot would only create runs stuck on "approval required". Trade-off: PRs from forks don't run CI automatically.
 - Add `[skip-release]` to a commit message on `dev` to skip the automatic release merge. The release workflow can also be run manually (*Actions → Dev to Release → Run workflow*).
 
 ## Data Flow
