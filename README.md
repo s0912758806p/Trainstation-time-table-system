@@ -51,6 +51,18 @@ Apply for keys at [TDX 運輸資料流通服務](https://tdx.transportdata.tw/).
 
 `vercel.json` pins the framework to Next.js so an older *Vite* preset in the Vercel dashboard can't override the build output.
 
+## Branching & Deployment
+
+```
+feature branch ──(Auto Pull Request)──▶ PR to dev ──(manual merge)──▶ dev
+dev ──(Dev to Release: auto PR + merge)──▶ release   → Vercel Preview
+release ──(manual PR + merge)──▶ main                → Vercel Production
+```
+
+- Both workflows in `.github/workflows/` use the built-in `GITHUB_TOKEN`, so no personal access token is needed. Requirement: *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests* must be enabled.
+- PRs and merges made with `GITHUB_TOKEN` don't trigger other workflows; Vercel deploys through its GitHub app, so it is unaffected.
+- Add `[skip-release]` to a commit message on `dev` to skip the automatic release merge. The release workflow can also be run manually (*Actions → Dev to Release → Run workflow*).
+
 ## Data Flow
 
 ```
