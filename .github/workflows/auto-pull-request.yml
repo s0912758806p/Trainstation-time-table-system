@@ -1,3 +1,6 @@
+# 功能分支推送後，自動開一個 PR 到 dev（已有 PR 時略過）。
+# 使用內建 GITHUB_TOKEN，不需要會過期的個人存取權杖。
+# 前提：Settings → Actions → General 勾選「Allow GitHub Actions to create and approve pull requests」。
 name: Auto Pull Request
 on:
   push:
@@ -7,71 +10,34 @@ on:
       - release
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
   auto-pull-request:
-    if: |
-      github.event_name == 'push' && 
-      !contains(github.actor, 'Gr925-auto-bot-project')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.BOT_PAT_TOKEN }}
 
-      - name: Extract Branch Info
-        id: branch-info
-        run: |
-          BRANCH_NAME="${{ github.ref_name }}"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          if [[ $BRANCH_NAME =~ v([0-9]+)$ ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-          else
-            VERSION=$(echo $BRANCH_NAME | sed -E 's/.*[-/]([^-/]+)$/\1/')
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Get Last Committer
-        id: last-commit
-        run: |
-          echo "name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-          echo "email=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
-          echo "message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
-
-      - name: Check if PR Exists
-        id: check-pr
-        run: |
-          PR_EXISTS=$(gh pr list --repo ${{ github.repository }} --head ${{ github.ref_name }} --base dev --json number --jq 'length')
-          echo "pr_exists=$([ "$PR_EXISTS" -gt 0 ] && echo true || echo false)" >> $GITHUB_OUTPUT
+      - name: Open PR to dev
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
-
-      - name: Create Pull Request
-        if: steps.check-pr.outputs.pr_exists == 'false'
-        id: open-pr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.BOT_PAT_TOKEN }}
-          commit-message: "[PR-BOT] Auto PR from ${{ github.ref_name }}"
-          branch: ${{ github.ref_name }}
-          base: dev
-          title: "${{ steps.branch-info.outputs.branch_name }} by ${{ steps.last-commit.outputs.name }}"
-          body: |
-            ## Automatic Pull Request from ${{ github.ref_name }}
-
-            Original Author: ${{ steps.last-commit.outputs.name }}
-            Original Email: ${{ steps.last-commit.outputs.email }}
-            Branch: ${{ steps.branch-info.outputs.branch_name }}
-            Version/ID: ${{ steps.branch-info.outputs.version }}
-
-            [View commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
-          committer: PR-BOT <pr-bot@users.noreply.github.com>
-          author: ${{ steps.last-commit.outputs.name }} <${{ steps.last-commit.outputs.email }}>
-          signoff: true
-          labels: |
-            automated pr
-            ${{ steps.branch-info.outputs.branch_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [ "$(git rev-list --count origin/dev..HEAD)" = "0" ]; then
+            echo "No commits ahead of dev; nothing to open."
+            exit 0
+          fi
+          EXISTING=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base dev --state open --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "PR from $BRANCH to dev already exists."
+            exit 0
+          fi
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+          TITLE=$(git log -1 --pretty=format:'%s')
+          BODY=$(printf '## Automatic pull request from `%s`\n\nLast commit by %s: %s/%s/commit/%s\n' \
+            "$BRANCH" "$AUTHOR" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_SHA")
+          gh pr create --repo "$GITHUB_REPOSITORY" --base dev --head "$BRANCH" --title "$TITLE" --body "$BODY"
