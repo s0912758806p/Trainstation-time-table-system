@@ -124,7 +124,7 @@ Server Components / Server Actions
 - **CI permissions.**
   - Workflows use the built-in `GITHUB_TOKEN` with the least permissions each job needs. There are no personal access tokens.
   - The repository has GitHub secret scanning and push protection enabled.
-- **Reporting a vulnerability.** Please don't post vulnerability details in a public issue. Open an issue that only asks for a private contact, and the maintainer will follow up.
+- **Reporting a vulnerability.** Please don't open a public issue. Use [*Security → Report a vulnerability*](https://github.com/s0912758806p/Trainstation-time-table-system/security/advisories/new) (GitHub private vulnerability reporting). Only you and the repository maintainers can see the report.
 
 ## Testing
 
