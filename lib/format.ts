@@ -58,6 +58,18 @@ export function isValidDate(date: string | undefined | null): date is string {
 
 export const weekday = (date: string) => DOW[parseDate(date).getUTCDay()];
 
+/**
+ * 快速日期「週六」：今天之後、且不是明天的下一個星期六。
+ * 明天剛好是星期六時改顯示下週六，避免和「明天」重複。
+ */
+export function nextSaturday(today: string): string {
+  for (let i = 2; i <= 8; i++) {
+    const d = addDays(today, i);
+    if (parseDate(d).getUTCDay() === 6) return d;
+  }
+  return addDays(today, 2);
+}
+
 /** 2026-11-24 → 11/24（二） */
 export function formatDateLabel(date: string): string {
   const [, m, d] = date.split('-');

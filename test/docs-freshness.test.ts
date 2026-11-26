@@ -11,11 +11,12 @@ const read = (p: string) => readFileSync(join(ROOT, p), 'utf8');
 const README = read('README.md');
 const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string>; engines: { node: string } };
 
+/** 找到以 title 開頭的標題，回傳到下一個同層或更高層標題之前的內容 */
 function section(title: string): string {
-  const start = README.indexOf(`## ${title}`) >= 0 ? README.indexOf(`## ${title}`) : README.indexOf(`### ${title}`);
-  expect(start, `README section "${title}" not found`).toBeGreaterThanOrEqual(0);
-  const rest = README.slice(start + 3);
-  const end = rest.search(/\n##? /);
+  const m = new RegExp(`^(#{2,4}) ${title}`, 'm').exec(README);
+  expect(m, `README section "${title}" not found`).not.toBeNull();
+  const rest = README.slice(m!.index + m![0].length);
+  const end = rest.search(new RegExp(`\\n#{1,${m![1].length}} `));
   return end < 0 ? rest : rest.slice(0, end);
 }
 
@@ -43,7 +44,7 @@ describe('README stays in sync with the code', () => {
   });
 
   it('environment variables match .env.example and the code', () => {
-    const documented = new Set([...section('Environment variables').matchAll(/`([A-Z][A-Z0-9_]+)`/g)].map((m) => m[1]));
+    const documented = new Set([...section('環境變數').matchAll(/`([A-Z][A-Z0-9_]+)`/g)].map((m) => m[1]));
     documented.delete('NEXT_PUBLIC_'); // 只是警語
     const example = new Set([...read('.env.example').matchAll(/^([A-Z][A-Z0-9_]+)=/gm)].map((m) => m[1]));
     const used = new Set(
@@ -63,7 +64,7 @@ describe('README stays in sync with the code', () => {
 
   it('lists exactly the workflow files that exist', () => {
     const files = readdirSync(join(ROOT, '.github/workflows')).filter((f) => f.endsWith('.yml')).sort();
-    const listed = [...new Set([...section('Branching & Deployment').matchAll(/`([\w-]+\.yml)`/g)].map((m) => m[1]))].sort();
+    const listed = [...new Set([...section('分支與部署').matchAll(/`([\w-]+\.yml)`/g)].map((m) => m[1]))].sort();
     expect(files.length).toBeGreaterThan(0);
     expect(listed).toEqual(files);
   });
