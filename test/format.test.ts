@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addDays, formatDateLabel, formatDuration, formatPrice, hash, isValidDate, minToTime, timeToMin,
+  addDays, formatDateLabel, nextSaturday, formatDuration, formatPrice, hash, isValidDate, minToTime, timeToMin,
 } from '@/lib/format';
 import { halfFare, trainTypeFromName } from '@/lib/trainTypes';
 
@@ -42,6 +42,16 @@ describe('format', () => {
 
   it('formatDateLabel includes the weekday', () => {
     expect(formatDateLabel('2026-11-24')).toBe('11/24（二）');
+  });
+
+  it.each([
+    ['2026-11-24', '2026-11-28'], // 週二 → 本週六
+    ['2026-11-27', '2026-12-05'], // 週五：明天就是週六 → 改用下週六
+    ['2026-11-28', '2026-12-05'], // 週六 → 下週六
+    ['2026-11-29', '2026-12-05'], // 週日 → 本週六
+  ])('nextSaturday(%s) → %s, never tomorrow', (today, sat) => {
+    expect(nextSaturday(today)).toBe(sat);
+    expect(nextSaturday(today)).not.toBe(addDays(today, 1));
   });
 
   it('hash is stable and unsigned', () => {

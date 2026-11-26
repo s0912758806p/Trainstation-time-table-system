@@ -6,21 +6,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { addDays, formatDateLabel, todayTW } from '@/lib/format';
+import { addDays, formatDateLabel, nextSaturday, todayTW } from '@/lib/format';
 import { pushRecent, useRecent } from '@/lib/stores/prefs';
 import type { Station } from '@/lib/types';
 import { SearchIcon, SwapIcon } from './icons';
 import { StationPicker } from './StationPicker';
 
 const TIMES = ['00:00', '06:00', '09:00', '12:00', '15:00', '18:00'];
-
-function nextSaturday(today: string) {
-  for (let i = 1; i <= 7; i++) {
-    const d = addDays(today, i);
-    if (new Date(`${d}T00:00:00Z`).getUTCDay() === 6) return d;
-  }
-  return addDays(today, 1);
-}
 
 export function SearchForm({
   stations, initial,
